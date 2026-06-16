@@ -76,21 +76,91 @@ function Test-Dependency {
     [pscustomobject]@{Name=$Dependency.Name;Required=[bool]$Dependency.Required;Found=[bool]$found;Purpose=$Dependency.Purpose;Details=$details;Plan=$Dependency.Plan}
 }
 
+function Write-DependencyPlanFile {
+    param([array]$MissingOptional)
+    if ($MissingOptional.Count -eq 0) { return }
+
+    $lines = @(
+        'Dependency install/import plan',
+        'Policy: Auto-install is denied by default. These are mock plans only.',
+        'Action: No download, install, import, or system change was performed.',
+        ''
+    )
+
+    foreach ($item in $MissingOptional) {
+        $lines += @(
+            "Dependency: $($item.Name)",
+            "Purpose:    $($item.Purpose)",
+            "Plan:       $($item.Plan)",
+            ''
+        )
+    }
+
+    $lines | Set-Content -Path $script:Run.DependencyPlanPath -Encoding UTF8
+}
+
+function Show-DependencySummary {
+    param([array]$Results,[switch]$MockInstall)
+
+    $required = @($Results | Where-Object Required)
+    $optional = @($Results | Where-Object { -not $_.Required })
+    $missingOptional = @($optional | Where-Object { -not $_.Found })
+    $missingRequired = @($required | Where-Object { -not $_.Found })
+
+    Write-Host ''
+    Write-Host '==== Dependency preflight ====' -ForegroundColor Cyan
+    Write-Host 'Policy: Auto-install default = No. Missing optional tools are documented and skipped.' -ForegroundColor White
+    Write-Host ''
+
+    Write-Host 'Required runtime checks:' -ForegroundColor White
+    foreach ($item in $required) {
+        $status = if ($item.Found) { '[OK]' } else { '[MISSING]' }
+        $color = if ($item.Found) { 'Green' } else { 'Red' }
+        Write-Host "  $status $($item.Name) - $($item.Details)" -ForegroundColor $color
+    }
+
+    Write-Host ''
+    Write-Host 'Optional future integration checks:' -ForegroundColor White
+    foreach ($item in $optional) {
+        $status = if ($item.Found) { '[OK]' } else { '[WARN]' }
+        $color = if ($item.Found) { 'Green' } else { 'Yellow' }
+        Write-Host "  $status $($item.Name) - $($item.Details)" -ForegroundColor $color
+    }
+
+    if ($missingOptional.Count -gt 0) {
+        Write-Host ''
+        Write-Host 'Optional dependency warnings:' -ForegroundColor Yellow
+        foreach ($item in $missingOptional) {
+            Write-Host "  - $($item.Name): $($item.Purpose)" -ForegroundColor Yellow
+        }
+        Write-Host '  Default action: no auto-install; continuing safely.' -ForegroundColor Yellow
+    }
+
+    if ($MockInstall -and $missingOptional.Count -gt 0) {
+        Write-DependencyPlanFile -MissingOptional $missingOptional
+        Write-Host ''
+        Write-Host "Mock dependency plan written: $($script:Run.DependencyPlanPath)" -ForegroundColor DarkCyan
+    }
+
+    Write-Host '==============================' -ForegroundColor Cyan
+    Write-Host ''
+
+    Add-Content -Path $script:Run.LogPath -Value '==== Dependency preflight ====' -Encoding UTF8
+    foreach ($item in $Results) {
+        $state = if ($item.Found) { 'FOUND' } else { 'MISSING' }
+        Add-Content -Path $script:Run.LogPath -Value "$state | Required=$($item.Required) | $($item.Name) | $($item.Details)" -Encoding UTF8
+    }
+    Add-Content -Path $script:Run.LogPath -Value '==============================' -Encoding UTF8
+
+    if ($missingRequired.Count -gt 0) {
+        throw "Blocking dependencies missing: $($missingRequired.Name -join ', ')"
+    }
+}
+
 function Test-Dependencies {
     param([switch]$MockInstall,[switch]$Strict)
-    Write-RunLog 'Dependency policy: default auto-install is No. Missing optional tools are documented and skipped.'
-    $results = foreach ($dependency in Get-DependencyManifest) {
-        $result = Test-Dependency $dependency
-        if ($result.Found) { Write-RunLog -Level OK -Message "Dependency found: $($result.Name) - $($result.Details)" }
-        else {
-            Write-RunLog -Level ($(if ($result.Required) {'ERROR'} else {'WARN'})) -Message "Dependency missing: $($result.Name) - $($result.Details)"
-            if ($MockInstall) {
-                @("Dependency: $($result.Name)","Default: Auto-install denied; continuing safely.","Plan: $($result.Plan)",'Action: Mock only. No download, install, import, or system change was performed.','') | Add-Content -Path $script:Run.DependencyPlanPath
-                Write-RunLog -Level PLAN -Message "Mock dependency plan written for: $($result.Name)"
-            }
-        }
-        $result
-    }
+    $results = foreach ($dependency in Get-DependencyManifest) { Test-Dependency $dependency }
+    Show-DependencySummary -Results $results -MockInstall:$MockInstall
     $blocking = @($results | Where-Object { -not $_.Found -and ($_.Required -or $Strict) })
     if ($blocking.Count -gt 0) { throw "Blocking dependencies missing: $($blocking.Name -join ', ')" }
     $results
@@ -202,7 +272,7 @@ function Start-AssuranceSnapshot {
     Write-RunLog 'Infrastructure Assurance Snapshot starting.'
     Write-RunLog "Artifacts will be written to: $($script:Run.OutputPath)"
     if ($DemoPaceSeconds -gt 0) { Write-RunLog "Demo pacing enabled: $DemoPaceSeconds second(s)." }
-    $dependencies = Invoke-Step 'Check dependencies first' { Test-Dependencies -MockInstall:$MockDependencyInstall -Strict:$StrictDependencies }
+    $dependencies = Invoke-Step 'Run grouped dependency preflight' { Test-Dependencies -MockInstall:$MockDependencyInstall -Strict:$StrictDependencies }
     $config = Invoke-Step 'Show effective mock scope and configurable targeting' { $c = Get-MockScopeConfiguration -Scope $MockScope; Show-MockScopeConfiguration -Config $c; $c }
     if (-not $MockData) { throw 'This prototype currently supports mock-data review mode only. Re-run with -MockData.' }
     $rows = Invoke-Step 'Load mock SCCM and SolarWinds rows' { @(Get-MockRows -Scope $MockScope) }
