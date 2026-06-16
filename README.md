@@ -24,10 +24,6 @@ This prototype shows how those signals could be combined into:
 
 ## Demo video
 
-GitHub Markdown does not support direct YouTube iframe embeds.
-
-After the walkthrough is uploaded, replace `REPLACE_WITH_VIDEO_ID` with the YouTube video ID:
-
 [![Watch the walkthrough](https://img.youtube.com/vi/bXrC129iTeo/maxresdefault.jpg)](https://www.youtube.com/watch?v=bXrC129iTeo)
 
 ## Safe-by-default behavior
