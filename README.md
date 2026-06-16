@@ -1,4 +1,4 @@
-# Infrastructure Assurance Snapshot
+# Infrastructure Assurance Snapshot Demo
 
 [![Watch the walkthrough](https://i.postimg.cc/3rLtM6Ct/example.png)](https://www.youtube.com/watch?v=bXrC129iTeo)
 
