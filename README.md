@@ -1,4 +1,5 @@
 # Infrastructure Assurance Snapshot Demo
+A read-only prototype that turns SCCM-style patch/deployment state and SolarWinds-style ticket/change evidence into a leadership-ready infrastructure assurance report.
 
 [![Watch the walkthrough](https://i.postimg.cc/Qx8V742d/Capture.png)](https://www.youtube.com/watch?v=bXrC129iTeo)
 
