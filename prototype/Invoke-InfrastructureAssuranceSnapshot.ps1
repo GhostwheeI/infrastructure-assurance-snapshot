@@ -4,7 +4,7 @@
 
 .DESCRIPTION
     Dependency-first mock prototype for SCCM + SolarWinds infrastructure assurance.
-    Console output is intentionally structured for short walkthroughs: clear sections, grouped warnings, and minimal noise.
+    Console output is structured for short walkthroughs: timestamped sections, aligned summaries, grouped warnings, and minimal wall-of-text behavior.
 #>
 
 [CmdletBinding()]
@@ -51,17 +51,34 @@ function Initialize-Run {
     ) | Set-Content -Path $script:Run.LogPath -Encoding UTF8
 }
 
+function Get-ConsoleTimestamp {
+    return (Get-Date -Format 'HH:mm:ss')
+}
+
 function Write-LogOnly {
     param([string]$Message,[string]$Level='INFO')
     Add-Content -Path $script:Run.LogPath -Encoding UTF8 -Value ('[{0}] [{1}] {2}' -f (Get-Date -Format 'yyyy-MM-dd HH:mm:ss'),$Level,$Message)
 }
 
+function Write-ConsoleLine {
+    param(
+        [string]$Message,
+        [string]$Color = 'White',
+        [string]$Level = 'INFO',
+        [switch]$NoLog
+    )
+
+    Write-Host ("{0}  {1}" -f (Get-ConsoleTimestamp), $Message) -ForegroundColor $Color
+    if (-not $NoLog) { Write-LogOnly $Message $Level }
+}
+
 function Write-Section {
     param([string]$Title,[string]$Subtitle)
+
     Write-Host ''
-    Write-Host $Title -ForegroundColor Cyan
-    if ($Subtitle) { Write-Host "  $Subtitle" -ForegroundColor DarkGray }
-    Write-LogOnly $Title 'STEP'
+    Write-ConsoleLine $Title 'Cyan' 'STEP'
+    Write-Host ("{0}  {1}" -f '        ', ('-' * 72)) -ForegroundColor DarkGray
+    if ($Subtitle) { Write-ConsoleLine ("  $Subtitle") 'DarkGray' 'INFO' }
 }
 
 function Write-StatusLine {
@@ -90,10 +107,19 @@ function Write-StatusLine {
         default { 'White' }
     }
 
-    $line = "  $label $Name"
-    if ($Detail) { $line += " - $Detail" }
-    Write-Host $line -ForegroundColor $color
-    Write-LogOnly "$Status | $Name | $Detail" $Status
+    $paddedName = if ($Name.Length -lt 32) { $Name.PadRight(32) } else { $Name }
+    $line = "  $label $paddedName"
+    if ($Detail) { $line += " $Detail" }
+    Write-ConsoleLine $line $color $Status
+}
+
+function Write-KeyValueBlock {
+    param([hashtable]$Values)
+
+    foreach ($key in $Values.Keys) {
+        $name = ($key + ':').PadRight(18)
+        Write-ConsoleLine "  $name $($Values[$key])" 'White' 'INFO'
+    }
 }
 
 function Start-DemoPace {
@@ -168,8 +194,7 @@ function Write-DependencyPlanFile {
 function Invoke-DependencyPreflight {
     param([switch]$MockInstall,[switch]$Strict)
 
-    Write-Section '[1/5] Dependency preflight' 'Grouped checks; optional integrations are not required for mock mode.'
-    Write-Host '  Policy: auto-install = denied by default; continue safely on missing optional tools.' -ForegroundColor DarkGray
+    Write-Section '[1/5] Dependency preflight' 'Grouped checks before report generation. Optional integrations are not required for mock mode.'
 
     $results = foreach ($dependency in Get-DependencyManifest) { Test-Dependency $dependency }
     $required = @($results | Where-Object Required)
@@ -177,21 +202,29 @@ function Invoke-DependencyPreflight {
     $missingOptional = @($optional | Where-Object { -not $_.Found })
     $missingRequired = @($required | Where-Object { -not $_.Found })
 
+    Write-KeyValueBlock @{
+        'Install policy' = 'Default deny; no downloads or installs are performed'
+        'Mock mode'      = 'Missing optional modules are skipped and documented'
+    }
+
     Write-Host ''
-    Write-Host '  Required runtime' -ForegroundColor White
+    Write-ConsoleLine '  Required runtime' 'White' 'INFO'
     foreach ($item in $required) {
         Write-StatusLine -Status $(if ($item.Found) {'OK'} else {'ERROR'}) -Name $item.Name -Detail $item.Details
     }
 
     Write-Host ''
-    Write-Host '  Optional future integrations' -ForegroundColor White
+    Write-ConsoleLine '  Optional future integrations' 'White' 'INFO'
     foreach ($item in $optional) {
         Write-StatusLine -Status $(if ($item.Found) {'OK'} else {'SKIP'}) -Name $item.Name -Detail $item.Details
     }
 
+    Write-Host ''
+    $summary = "required $(@($required | Where-Object Found).Count)/$($required.Count) ok; optional skipped $($missingOptional.Count)/$($optional.Count)"
+    Write-StatusLine -Status $(if ($missingRequired.Count -eq 0) {'OK'} else {'ERROR'}) -Name 'Preflight summary' -Detail $summary
+
     if ($missingOptional.Count -gt 0) {
-        Write-Host ''
-        Write-StatusLine -Status 'WARN' -Name 'Optional integrations skipped' -Detail 'mock data run continues without SCCM/SolarWinds/Graph modules'
+        Write-StatusLine -Status 'WARN' -Name 'Optional integrations' -Detail 'skipped for mock run; production notes cover approved setup path'
     }
 
     if ($MockInstall -and $missingOptional.Count -gt 0) {
@@ -252,24 +285,31 @@ function Get-MockScopeConfiguration {
     [pscustomobject]$config
 }
 
+function Write-ListBlock {
+    param([string]$Title,[array]$Items)
+    Write-ConsoleLine "  $Title" 'White' 'INFO'
+    foreach ($item in $Items) { Write-ConsoleLine "    - $item" 'DarkGray' 'INFO' }
+}
+
 function Show-MockScopeConfiguration {
     param([pscustomobject]$Config)
 
-    Write-Section '[2/5] Scoped mock targeting' 'Shows what would be configurable in a real environment.'
-    Write-Host '  This is intentionally scoped; it is not targeting an entire inventory.' -ForegroundColor DarkGray
-    Write-Host ''
-    Write-Host '  mock_targeting:' -ForegroundColor White
-    Write-Host "    scope_name: $($Config.ScopeName)" -ForegroundColor White
-    Write-Host "    data_mode: $($Config.DataMode)" -ForegroundColor White
-    Write-Host "    install_policy: $($Config.InstallPolicy)" -ForegroundColor White
-    Write-Host '    sccm_collections:' -ForegroundColor White
-    foreach ($item in $Config.SccmCollections) { Write-Host "      - $item" -ForegroundColor White }
-    Write-Host '    solarwinds_queues:' -ForegroundColor White
-    foreach ($item in $Config.SolarWindsQueues) { Write-Host "      - $item" -ForegroundColor White }
-    Write-Host '    report_sections:' -ForegroundColor White
-    foreach ($item in $Config.ReportSections) { Write-Host "      - $item" -ForegroundColor White }
+    Write-Section '[2/5] Scoped mock targeting' 'Displays what is configurable without implying full-environment access.'
 
-    Write-LogOnly "Mock scope: $($Config.ScopeName) | $($Config.Description)" 'INFO'
+    Write-KeyValueBlock @{
+        'Scope'          = $Config.ScopeName
+        'Mode'           = $Config.DataMode
+        'Install policy' = $Config.InstallPolicy
+        'Description'    = $Config.Description
+    }
+
+    Write-Host ''
+    Write-ListBlock 'SCCM collections' $Config.SccmCollections
+    Write-Host ''
+    Write-ListBlock 'SolarWinds queues' $Config.SolarWindsQueues
+    Write-Host ''
+    Write-ListBlock 'Report sections' $Config.ReportSections
+
     Start-DemoPace
 }
 
@@ -363,11 +403,11 @@ function Start-AssuranceSnapshot {
     Initialize-Run -BasePath $OutputPath
 
     Write-Host ''
-    Write-Host 'Infrastructure Assurance Snapshot' -ForegroundColor Cyan
-    Write-Host 'Read-only SCCM + SolarWinds assurance prototype' -ForegroundColor DarkGray
-    Write-Host "Output: $($script:Run.OutputPath)" -ForegroundColor DarkGray
+    Write-ConsoleLine 'Infrastructure Assurance Snapshot' 'Cyan' 'STEP'
+    Write-ConsoleLine 'Read-only SCCM + SolarWinds assurance prototype' 'DarkGray' 'INFO'
+    Write-ConsoleLine "Output: $($script:Run.OutputPath)" 'DarkGray' 'INFO'
 
-    if ($DemoPaceSeconds -gt 0) { Write-Host "Demo pacing: $DemoPaceSeconds second(s) between major sections" -ForegroundColor DarkGray }
+    if ($DemoPaceSeconds -gt 0) { Write-ConsoleLine "Demo pacing: $DemoPaceSeconds second(s) between major sections" 'DarkGray' 'INFO' }
 
     $dependencies = Invoke-DependencyPreflight -MockInstall:$MockDependencyInstall -Strict:$StrictDependencies
     $config = Get-MockScopeConfiguration -Scope $MockScope
@@ -378,7 +418,11 @@ function Start-AssuranceSnapshot {
     Write-Section '[3/5] Mock data load' 'Loading scoped SCCM/SolarWinds sample rows.'
     $rows = @(Get-MockRows -Scope $MockScope)
     if ($rows.Count -eq 0) { throw 'No rows returned for selected mock scope.' }
-    Write-StatusLine -Status 'OK' -Name 'Rows loaded' -Detail "$($rows.Count) mock infrastructure records"
+    Write-KeyValueBlock @{
+        'Rows loaded'   = "$($rows.Count) mock infrastructure records"
+        'Source mode'   = 'local mock data only'
+        'Live systems'  = 'none contacted'
+    }
     Start-DemoPace
 
     Write-Section '[4/5] Artifact generation' 'Writing local report, work queue, evidence, and log files.'
@@ -391,7 +435,10 @@ function Start-AssuranceSnapshot {
     Start-DemoPace
 
     Write-Section '[5/5] Complete' 'No live systems were contacted. No changes were made.'
-    Write-StatusLine -Status 'OK' -Name 'Run complete' -Detail 'review generated artifacts in the output folder'
+    Write-KeyValueBlock @{
+        'Result'      = 'complete'
+        'Next review' = 'open the generated HTML report and CSV work queue'
+    }
 
     Open-OutputFolderIfRequested -Mode $OpenOutputFolder
 }
@@ -399,6 +446,6 @@ function Start-AssuranceSnapshot {
 try { Start-AssuranceSnapshot }
 catch {
     if ($script:Run.LogPath) { Write-LogOnly $_.Exception.Message 'ERROR' }
-    Write-Host "[FAIL] $($_.Exception.Message)" -ForegroundColor Red
+    Write-ConsoleLine "[FAIL] $($_.Exception.Message)" 'Red' 'ERROR'
     exit 1
 }
