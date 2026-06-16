@@ -5,7 +5,7 @@ A read-only prototype that turns SCCM-style patch/deployment state and SolarWind
 
 A read-only prototype that turns SCCM-style patch/deployment state and SolarWinds-style ticket/change evidence into a leadership-ready infrastructure assurance report.
 
-The point is not to replace SCCM, SolarWinds, monitoring, vulnerability scanning, backup tooling, or SIEM. The point is to sit above those tools and answer the operational questions leadership needs answered:
+The point is not to replace SCCM, SolarWinds, monitoring, vulnerability scanning, backup tooling, or SIEM. The point is to sit above those tools and answer the operational questions leadership needs answered.
 
 > What is exposed, what is overdue, who owns it, what ticket/change record proves the work, and what still needs a decision?
 
@@ -29,7 +29,7 @@ This prototype shows how those signals could be combined into:
 
 The [`sample-output/`](sample-output/) folder includes static examples of the artifacts the prototype generates during a mock run.
 
-(https://i.postimg.cc/NjWgdpzd/Infrastructure-Assurance-Snapshot.jpg)
+![Infrastructure Assurance Snapshot Dashboard](https://i.postimg.cc/NjWgdpzd/Infrastructure-Assurance-Snapshot.jpg)
 
 ```text
 Infrastructure Assurance Snapshot log
