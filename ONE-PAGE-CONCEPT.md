@@ -24,18 +24,22 @@ Raw consoles rarely answer all of that in one place.
 
 ## First MVP
 
-Patch, reboot, and vulnerability assurance.
+SCCM + SolarWinds patch, reboot, and vulnerability assurance.
+
+SCCM remains the technical source for device inventory, compliance, deployment state, and reboot status. SolarWinds remains the work/evidence source for ticket, incident, change, assignment, approval, exception, and validation records.
 
 Inputs:
 
-- Server inventory
+- SCCM server inventory
+- SCCM update compliance state
+- SCCM deployment status
+- Pending reboot state
 - Owner/team
 - Criticality tier
-- Last patch date
-- Pending reboot state
 - Maintenance window
 - Known-exploited vulnerability exposure
-- Change ticket or exception
+- SolarWinds ticket/change/incident reference
+- Exception or accepted-risk status
 
 Outputs:
 
@@ -44,6 +48,7 @@ Outputs:
 - JSON evidence file
 - CAB-ready summary
 - Weekly top-risk actions
+- Evidence-gap list
 
 ## Why this matters
 
@@ -52,11 +57,11 @@ Patch success is not just "patch installed."
 The real operational questions are:
 
 - Was the system in scope?
-- Was the patch validated?
+- Did SCCM report success, failure, or unknown state?
 - Is a reboot still pending?
 - Is the system business-critical?
 - Is there an active exploited vulnerability?
-- Was a change ticket linked?
+- Is there a SolarWinds ticket/change record linked?
 - Was an exception approved?
 
 This concept focuses on those answers.
@@ -75,7 +80,7 @@ The prototype is intentionally read-only.
 
 Start small.
 
-Phase 1: Patch / reboot / vulnerability dashboard  
+Phase 1: SCCM + SolarWinds patch/reboot/vulnerability dashboard  
 Phase 2: Hybrid identity drift reporting  
 Phase 3: Backup / restore evidence tracking  
 Phase 4: Change evidence and audit packet generation
@@ -84,4 +89,4 @@ Phase 4: Change evidence and audit packet generation
 
 This is an operational assurance layer, not a monitoring replacement.
 
-Its value is making existing data actionable, reviewable, and defensible.
+Its value is making existing SCCM, SolarWinds, security, and backup data more actionable, reviewable, and defensible.
