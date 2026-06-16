@@ -1,0 +1,168 @@
+{
+  "GeneratedAt": "2026-06-16T18:45:49.0978770-04:00",
+  "EffectiveMockConfiguration": {
+    "ScopeName": "Default",
+    "DataMode": "Mock only",
+    "InstallPolicy": "Auto-install denied by default",
+    "Output": [
+      "HTML report",
+      "CSV work queue",
+      "JSON evidence",
+      "run log"
+    ],
+    "Description": "Default scoped review for a balanced infrastructure assurance snapshot",
+    "SccmCollections": [
+      "Windows Servers - Production",
+      "Domain Controllers - Patch Validation",
+      "Tier 1 Application Servers"
+    ],
+    "SolarWindsQueues": [
+      "Infrastructure Change Queue",
+      "Application/Data Change Queue",
+      "Incident Follow-up Queue"
+    ],
+    "ReportSections": [
+      "Patch/Reboot Risk",
+      "SCCM Deployment State",
+      "SolarWinds Evidence",
+      "Exceptions",
+      "Recommended Actions"
+    ]
+  },
+  "Dependencies": [
+    {
+      "Name": "PowerShell Runtime",
+      "Required": true,
+      "Found": true,
+      "Purpose": "Runs the prototype",
+      "Details": "PowerShell 7.6.1",
+      "Plan": "Use Windows PowerShell 5.1+ or approved PowerShell 7 deployment"
+    },
+    {
+      "Name": "JSON Serialization",
+      "Required": true,
+      "Found": true,
+      "Purpose": "Writes JSON evidence",
+      "Details": "available",
+      "Plan": "Built into supported PowerShell"
+    },
+    {
+      "Name": "CSV Export",
+      "Required": true,
+      "Found": true,
+      "Purpose": "Writes CSV work queue",
+      "Details": "available",
+      "Plan": "Built into supported PowerShell"
+    },
+    {
+      "Name": "SCCM / MECM Module",
+      "Required": false,
+      "Found": false,
+      "Purpose": "Future SCCM read-only integration",
+      "Details": "not installed; optional for mock run",
+      "Plan": "Use approved SCCM Admin Console source"
+    },
+    {
+      "Name": "SolarWinds SWIS Module",
+      "Required": false,
+      "Found": false,
+      "Purpose": "Future SolarWinds read-only integration",
+      "Details": "not installed; optional for mock run",
+      "Plan": "Use approved internal package source"
+    },
+    {
+      "Name": "Microsoft Graph Auth",
+      "Required": false,
+      "Found": false,
+      "Purpose": "Future Entra ID read-only integration",
+      "Details": "not installed; optional for mock run",
+      "Plan": "Use approved internal package source"
+    }
+  ],
+  "Rows": [
+    {
+      "RecommendedAction": "No immediate action. Maintain normal cadence.",
+      "DeploymentState": "Success",
+      "Risk": "Low",
+      "Criticality": "Tier 1",
+      "Owner": "Infrastructure",
+      "PendingReboot": false,
+      "ExceptionStatus": "None",
+      "DaysSincePatch": 9,
+      "SolarWindsRecord": "CHG-10482",
+      "KnownExploitedVulns": 0,
+      "ServerName": "OAG-DC01",
+      "SCCMCompliance": "Compliant"
+    },
+    {
+      "RecommendedAction": "Prioritize remediation; reboot pending after approved patch window.",
+      "DeploymentState": "Success",
+      "Risk": "Critical",
+      "Criticality": "Tier 1",
+      "Owner": "End User Services",
+      "PendingReboot": true,
+      "ExceptionStatus": "None",
+      "DaysSincePatch": 38,
+      "SolarWindsRecord": "CHG-10511",
+      "KnownExploitedVulns": 1,
+      "ServerName": "OAG-FS02",
+      "SCCMCompliance": "NonCompliant"
+    },
+    {
+      "RecommendedAction": "Patch in next scheduled maintenance cycle.",
+      "DeploymentState": "Success",
+      "Risk": "Low",
+      "Criticality": "Tier 2",
+      "Owner": "Application/Data",
+      "PendingReboot": false,
+      "ExceptionStatus": "None",
+      "DaysSincePatch": 22,
+      "SolarWindsRecord": "INC-88412",
+      "KnownExploitedVulns": 0,
+      "ServerName": "OAG-APP07",
+      "SCCMCompliance": "Compliant"
+    },
+    {
+      "RecommendedAction": "Leadership review required. High-risk exception should have compensating controls.",
+      "DeploymentState": "Failed",
+      "Risk": "Critical",
+      "Criticality": "Tier 1",
+      "Owner": "Application/Data",
+      "PendingReboot": true,
+      "ExceptionStatus": "Approved Exception",
+      "DaysSincePatch": 51,
+      "SolarWindsRecord": "CHG-10526",
+      "KnownExploitedVulns": 2,
+      "ServerName": "OAG-SQL03",
+      "SCCMCompliance": "NonCompliant"
+    },
+    {
+      "RecommendedAction": "Continue standard remediation cadence.",
+      "DeploymentState": "Success",
+      "Risk": "Low",
+      "Criticality": "Tier 3",
+      "Owner": "Infrastructure",
+      "PendingReboot": false,
+      "ExceptionStatus": "None",
+      "DaysSincePatch": 17,
+      "SolarWindsRecord": "CHG-10477",
+      "KnownExploitedVulns": 0,
+      "ServerName": "OAG-PRINT01",
+      "SCCMCompliance": "Compliant"
+    },
+    {
+      "RecommendedAction": "No immediate action.",
+      "DeploymentState": "Success",
+      "Risk": "Low",
+      "Criticality": "Tier 2",
+      "Owner": "Infrastructure",
+      "PendingReboot": false,
+      "ExceptionStatus": "None",
+      "DaysSincePatch": 5,
+      "SolarWindsRecord": "CHG-10518",
+      "KnownExploitedVulns": 0,
+      "ServerName": "OAG-MGMT01",
+      "SCCMCompliance": "Compliant"
+    }
+  ]
+}

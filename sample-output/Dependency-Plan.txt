@@ -1,0 +1,16 @@
+Dependency install/import plan
+Policy: Auto-install is denied by default. These are mock plans only.
+Action: No download, install, import, or system change was performed.
+
+Dependency: SCCM / MECM Module
+Purpose:    Future SCCM read-only integration
+Plan:       Use approved SCCM Admin Console source
+
+Dependency: SolarWinds SWIS Module
+Purpose:    Future SolarWinds read-only integration
+Plan:       Use approved internal package source
+
+Dependency: Microsoft Graph Auth
+Purpose:    Future Entra ID read-only integration
+Plan:       Use approved internal package source
+
