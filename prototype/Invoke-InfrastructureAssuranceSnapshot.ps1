@@ -39,15 +39,19 @@ function Initialize-Run {
 function Write-RunLog {
     param([string]$Message,[ValidateSet('INFO','STEP','OK','WARN','ERROR','PLAN')][string]$Level='INFO')
     $line = '[{0}] [{1}] {2}' -f (Get-Date -Format 'yyyy-MM-dd HH:mm:ss'),$Level,$Message
-    switch ($Level) { 'ERROR'{Write-Host $line -ForegroundColor Red} 'WARN'{Write-Host $line -ForegroundColor Yellow} 'OK'{Write-Host $line -ForegroundColor Green} 'STEP'{Write-Host $line -ForegroundColor Cyan} default{Write-Host $line} }
+    switch ($Level) { 'ERROR'{Write-Host $line -ForegroundColor Red} 'WARN'{Write-Host $line -ForegroundColor Yellow} 'OK'{Write-Host $line -ForegroundColor Green} 'STEP'{Write-Host $line -ForegroundColor Cyan} 'PLAN'{Write-Host $line -ForegroundColor DarkCyan} default{Write-Host $line} }
     Add-Content -Path $script:Run.LogPath -Value $line -Encoding UTF8
+}
+
+function Start-DemoPace {
+    if ($script:Run.DemoPaceSeconds -gt 0) { Start-Sleep -Seconds $script:Run.DemoPaceSeconds }
 }
 
 function Invoke-Step {
     param([string]$Name,[scriptblock]$Action)
     Write-RunLog -Level STEP -Message "Starting: $Name"
-    if ($script:Run.DemoPaceSeconds -gt 0) { Start-Sleep -Seconds $script:Run.DemoPaceSeconds }
-    try { $result = & $Action; Write-RunLog -Level OK -Message "Completed: $Name"; if ($script:Run.DemoPaceSeconds -gt 0) { Start-Sleep -Seconds $script:Run.DemoPaceSeconds }; return $result }
+    Start-DemoPace
+    try { $result = & $Action; Write-RunLog -Level OK -Message "Completed: $Name"; Start-DemoPace; return $result }
     catch { Write-RunLog -Level ERROR -Message "Failed: $Name. $($_.Exception.Message)"; throw }
 }
 
@@ -107,10 +111,23 @@ function Get-MockScopeConfiguration {
 function Show-MockScopeConfiguration {
     param([pscustomobject]$Config)
     Write-RunLog "Effective mock scope: $($Config.ScopeName)"
+    Write-RunLog 'Displaying configurable mock targeting block.'
+    Write-Host ''
+    Write-Host '```yaml' -ForegroundColor DarkGray
+    Write-Host 'mock_targeting:' -ForegroundColor White
+    Write-Host "  scope_name: $($Config.ScopeName)" -ForegroundColor White
+    Write-Host "  data_mode: $($Config.DataMode)" -ForegroundColor White
+    Write-Host "  install_policy: $($Config.InstallPolicy)" -ForegroundColor White
+    Write-Host '  sccm_collections:' -ForegroundColor White
+    foreach ($item in $Config.SccmCollections) { Write-Host "    - $item" -ForegroundColor White }
+    Write-Host '  solarwinds_queues:' -ForegroundColor White
+    foreach ($item in $Config.SolarWindsQueues) { Write-Host "    - $item" -ForegroundColor White }
+    Write-Host '  report_sections:' -ForegroundColor White
+    foreach ($item in $Config.ReportSections) { Write-Host "    - $item" -ForegroundColor White }
+    Write-Host '```' -ForegroundColor DarkGray
+    Write-Host ''
+    Start-DemoPace
     Write-RunLog "Scope description: $($Config.Description)"
-    Write-RunLog "Mock SCCM collections: $($Config.SccmCollections -join '; ')"
-    Write-RunLog "Mock SolarWinds queues: $($Config.SolarWindsQueues -join '; ')"
-    Write-RunLog "Report sections: $($Config.ReportSections -join '; ')"
 }
 
 function Get-RiskLevel {
@@ -186,7 +203,7 @@ function Start-AssuranceSnapshot {
     Write-RunLog "Artifacts will be written to: $($script:Run.OutputPath)"
     if ($DemoPaceSeconds -gt 0) { Write-RunLog "Demo pacing enabled: $DemoPaceSeconds second(s)." }
     $dependencies = Invoke-Step 'Check dependencies first' { Test-Dependencies -MockInstall:$MockDependencyInstall -Strict:$StrictDependencies }
-    $config = Invoke-Step 'Show effective mock scope and configurable defaults' { $c = Get-MockScopeConfiguration -Scope $MockScope; Show-MockScopeConfiguration -Config $c; $c }
+    $config = Invoke-Step 'Show effective mock scope and configurable targeting' { $c = Get-MockScopeConfiguration -Scope $MockScope; Show-MockScopeConfiguration -Config $c; $c }
     if (-not $MockData) { throw 'This prototype currently supports mock-data review mode only. Re-run with -MockData.' }
     $rows = Invoke-Step 'Load mock SCCM and SolarWinds rows' { @(Get-MockRows -Scope $MockScope) }
     if ($rows.Count -eq 0) { throw 'No rows returned for selected mock scope.' }
