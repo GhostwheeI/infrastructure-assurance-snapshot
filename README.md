@@ -135,6 +135,33 @@ Optional future integration checks:
 
 Auto-install is denied by default. If `-MockDependencyInstall` is used, the script writes a plan showing what would be needed later, but performs no install, import, download, or system change.
 
+## Production notes
+
+A real implementation should start export-first and read-only before any direct API/module integrations are considered.
+
+See [`docs/PRODUCTION-NOTES.md`](docs/PRODUCTION-NOTES.md) for recommended production boundaries, credential handling, access model, and review checks.
+
+## Code quality posture
+
+The script is intentionally simple rather than overengineered.
+
+It uses:
+
+- strict mode
+- stop-on-error behavior
+- grouped dependency preflight
+- default-deny install posture
+- temp-based output
+- explicit mock targeting
+- local report/evidence/log artifacts
+- HTML encoding before report rendering
+
+Before any production use, review with normal PowerShell standards and run PSScriptAnalyzer:
+
+```powershell
+Invoke-ScriptAnalyzer -Path .\prototype\Invoke-InfrastructureAssuranceSnapshot.ps1
+```
+
 ## Repository layout
 
 ```text
@@ -149,6 +176,7 @@ Auto-install is denied by default. If `-MockDependencyInstall` is used, the scri
 │  └─ Invoke-InfrastructureAssuranceSnapshot.ps1
 └─ docs/
    ├─ SAFETY-NOTES.md
+   ├─ PRODUCTION-NOTES.md
    ├─ SCCM-SOLARWINDS-INTEGRATION-NOTES.md
    └─ IMPLEMENTATION-ROADMAP.md
 ```
