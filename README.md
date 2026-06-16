@@ -51,20 +51,52 @@ That avoids accidental output under `C:\Windows\System32` when PowerShell is lau
 
 ## Prototype workflow
 
-The script is dependency-first and grouped for easy review:
+The script is dependency-first and grouped for easy review. Console output is timestamped, but it is intentionally structured so the run does not appear as a wall of unrelated log lines.
 
-1. Create a temp-based run folder and log file
-2. Run one grouped dependency preflight section
-3. Show configurable mock targeting scope
-4. Load mock SCCM + SolarWinds rows
-5. Generate HTML, CSV, JSON, and log artifacts
-6. Ask whether to open the output folder
+The walkthrough is organized into five sections:
 
-The dependency preflight prints all required checks, optional checks, warnings, and mock install-plan notes together before the report work begins.
+1. Dependency preflight
+2. Scoped mock targeting
+3. Mock data load
+4. Artifact generation
+5. Completion summary
+
+The dependency preflight prints required checks, optional checks, summary, warnings, and mock install-plan notes together before report generation begins.
+
+## Console presentation
+
+The console view is designed for a short screen-recorded walkthrough.
+
+It uses:
+
+- visible timestamps
+- section dividers
+- aligned status lines
+- grouped key/value summaries
+- compact dependency results
+- clear `[OK]`, `[SKIP]`, `[WARN]`, `[PLAN]`, and `[FAIL]` markers
+
+That keeps the output readable while still showing that the script is doing real checks and producing local artifacts.
+
+Example structure:
+
+```text
+12:34:01  [1/5] Dependency preflight
+          ------------------------------------------------------------------------
+12:34:01    Required runtime
+12:34:01    [OK]   PowerShell Runtime              PowerShell 5.1+
+12:34:01    [OK]   JSON Serialization              available
+12:34:01    [OK]   CSV Export                       available
+
+12:34:01    Optional future integrations
+12:34:01    [SKIP] SCCM / MECM Module              not installed; optional for mock run
+12:34:01    [SKIP] SolarWinds SWIS Module          not installed; optional for mock run
+12:34:01    [WARN] Optional integrations           skipped for mock run
+```
 
 ## Configurable mock targeting
 
-The run displays a YAML-style mock targeting block so it is clear the concept is scoped and configurable, not blindly targeting an entire environment.
+The run displays a scoped targeting block so it is clear the concept is configurable, not blindly targeting an entire environment.
 
 Available mock scopes:
 
@@ -75,27 +107,15 @@ Tier1Only
 IdentityAndRecoveryPreview
 ```
 
-Example of what the script displays:
+Example scope values:
 
-```yaml
-mock_targeting:
-  scope_name: Default
-  data_mode: Mock only
-  install_policy: Auto-install denied by default
-  sccm_collections:
-    - All Windows Servers - Production
-    - Domain Controllers
-    - Tier 1 Application Servers
-  solarwinds_queues:
-    - Infrastructure Change
-    - Application/Data Change
-    - End User Services Incidents
-  report_sections:
-    - Patch/Reboot Risk
-    - SCCM Deployment State
-    - SolarWinds Evidence
-    - Exceptions
-    - Recommended Actions
+```text
+Scope:             Default
+Mode:              Mock only
+Install policy:    Auto-install denied by default
+SCCM collections:  Windows Servers - Production; Domain Controllers - Patch Validation; Tier 1 Application Servers
+SolarWinds queues: Infrastructure Change Queue; Application/Data Change Queue; Incident Follow-up Queue
+Report sections:   Patch/Reboot Risk; SCCM Deployment State; SolarWinds Evidence; Exceptions; Recommended Actions
 ```
 
 ## Running the prototype
@@ -104,6 +124,12 @@ Best command for a short walkthrough video:
 
 ```powershell
 .\prototype\Invoke-InfrastructureAssuranceSnapshot.ps1 -MockData -MockScope Default -MockDependencyInstall -DemoPaceSeconds 1 -OpenOutputFolder Ask
+```
+
+Cleaner video run with no pacing delay:
+
+```powershell
+.\prototype\Invoke-InfrastructureAssuranceSnapshot.ps1 -MockData -MockScope Default -MockDependencyInstall -OpenOutputFolder Ask
 ```
 
 Non-interactive review:
@@ -115,7 +141,7 @@ Non-interactive review:
 Focused Tier 1 demo:
 
 ```powershell
-.\prototype\Invoke-InfrastructureAssuranceSnapshot.ps1 -MockData -MockScope Tier1Only -MockDependencyInstall -DemoPaceSeconds 1 -OpenOutputFolder Ask
+.\prototype\Invoke-InfrastructureAssuranceSnapshot.ps1 -MockData -MockScope Tier1Only -MockDependencyInstall -OpenOutputFolder Ask
 ```
 
 ## Dependency behavior
