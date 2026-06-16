@@ -1,8 +1,12 @@
+## Screenshot
+
+[![Watch the walkthrough](https://i.postimg.cc/3rLtM6Ct/example.png)](https://www.youtube.com/watch?v=bXrC129iTeo)
+
 # Infrastructure Assurance Snapshot
 
 A read-only prototype that turns SCCM-style patch/deployment state and SolarWinds-style ticket/change evidence into a leadership-ready infrastructure assurance report.
 
-The point is not to replace SCCM, SolarWinds, monitoring, vulnerability scanning, backup tooling, or SIEM. The point is to sit above those tools and answer the operational questions leadership actually needs answered:
+The point is not to replace SCCM, SolarWinds, monitoring, vulnerability scanning, backup tooling, or SIEM. The point is to sit above those tools and answer the operational questions leadership needs answered:
 
 > What is exposed, what is overdue, who owns it, what ticket/change record proves the work, and what still needs a decision?
 
@@ -22,10 +26,6 @@ This prototype shows how those signals could be combined into:
 - a run log
 - a dependency plan when optional tools are missing
 
-## Demo video
-
-[![Watch the walkthrough](https://i.postimg.cc/3rLtM6Ct/example.png)](https://www.youtube.com/watch?v=bXrC129iTeo)
-
 ## Safe-by-default behavior
 
 The prototype is intentionally conservative.
@@ -41,14 +41,6 @@ The prototype is intentionally conservative.
 - Output defaults to the native OS temp directory
 - Each run creates its own timestamped output folder
 
-By default, artifacts are written under a temp path like:
-
-```text
-%TEMP%\InfrastructureAssuranceSnapshot\Run-yyyyMMdd-HHmmss\
-```
-
-That avoids accidental output under `C:\Windows\System32` when PowerShell is launched elevated.
-
 ## Prototype workflow
 
 The script is dependency-first and grouped for easier review. Console output is timestamped, but it is structured so the run does not turn into a wall of unrelated log lines.
@@ -63,80 +55,7 @@ The walkthrough is organized into five sections:
 
 The dependency preflight prints required checks, optional checks, summary, warnings, and mock install-plan notes together before report generation starts.
 
-## Console presentation
-
-The console view is built for a short screen-recorded walkthrough.
-
-It uses:
-
-- visible timestamps
-- section dividers
-- aligned status lines
-- grouped key/value summaries
-- compact dependency results
-- clear `[OK]`, `[SKIP]`, `[WARN]`, `[PLAN]`, and `[FAIL]` markers
-
-That keeps the output readable while still showing that the script is doing real checks and producing local artifacts.
-
-Example structure:
-
-```text
-12:34:01  [1/5] Dependency preflight
-          ------------------------------------------------------------------------
-12:34:01    Required runtime
-12:34:01    [OK]   PowerShell Runtime              PowerShell 5.1+
-12:34:01    [OK]   JSON Serialization              available
-12:34:01    [OK]   CSV Export                       available
-
-12:34:01    Optional future integrations
-12:34:01    [SKIP] SCCM / MECM Module              not installed; optional for mock run
-12:34:01    [SKIP] SolarWinds SWIS Module          not installed; optional for mock run
-12:34:01    [WARN] Optional integrations           skipped for mock run
-```
-
-## Configurable mock targeting
-
-The run displays a scoped targeting block so it is clear the concept is configurable, not blindly pointed at an entire environment.
-
-Available mock scopes:
-
-```text
-Default
-PatchOnly
-Tier1Only
-IdentityAndRecoveryPreview
-```
-
-Example scope values:
-
-```text
-Scope:             Default
-Mode:              Mock only
-Install policy:    Auto-install denied by default
-SCCM collections:  Windows Servers - Production; Domain Controllers - Patch Validation; Tier 1 Application Servers
-SolarWinds queues: Infrastructure Change Queue; Application/Data Change Queue; Incident Follow-up Queue
-Report sections:   Patch/Reboot Risk; SCCM Deployment State; SolarWinds Evidence; Exceptions; Recommended Actions
-```
-
 ## Running the prototype
-
-Best command for a short walkthrough video:
-
-```powershell
-.\prototype\Invoke-InfrastructureAssuranceSnapshot.ps1 -MockData -MockScope Default -MockDependencyInstall -DemoPaceSeconds 1 -OpenOutputFolder Ask
-```
-
-Cleaner video run with no pacing delay:
-
-```powershell
-.\prototype\Invoke-InfrastructureAssuranceSnapshot.ps1 -MockData -MockScope Default -MockDependencyInstall -OpenOutputFolder Ask
-```
-
-Non-interactive review:
-
-```powershell
-.\prototype\Invoke-InfrastructureAssuranceSnapshot.ps1 -MockData -MockScope Default -MockDependencyInstall -OpenOutputFolder No
-```
 
 Focused Tier 1 demo:
 
@@ -182,12 +101,6 @@ It uses:
 - local report/evidence/log artifacts
 - HTML encoding before report rendering
 
-Before any production use, review it with normal PowerShell standards and run PSScriptAnalyzer:
-
-```powershell
-Invoke-ScriptAnalyzer -Path .\prototype\Invoke-InfrastructureAssuranceSnapshot.ps1
-```
-
 ## Repository layout
 
 ```text
@@ -220,8 +133,6 @@ The first production version should start with export-based correlation before d
 - SolarWinds ticket/change/incident reference
 - approved exception or accepted-risk reference
 - recommended next action
-
-That creates a direct operational work queue for infrastructure teams and a clean risk view for leadership.
 
 ## Status
 
