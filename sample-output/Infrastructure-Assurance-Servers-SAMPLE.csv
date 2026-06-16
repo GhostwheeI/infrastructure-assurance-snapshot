@@ -1,7 +1,0 @@
-ServerName,Environment,Owner,Criticality,OS,SCCMCompliance,DeploymentState,DaysSincePatch,PendingReboot,KnownExploitedVulns,SolarWindsRecord,ExceptionStatus,Risk,RecommendedAction
-OAG-DC01,On-Prem,Infrastructure,Tier 1,Windows Server 2022,Compliant,Success,9,False,0,CHG-10482,None,Low,No immediate action. Maintain normal cadence.
-OAG-FS02,On-Prem,End User Services,Tier 1,Windows Server 2019,NonCompliant,Success,38,True,1,CHG-10511,None,Critical,Prioritize remediation; reboot pending after approved patch window.
-OAG-APP07,Azure,Application/Data,Tier 2,Windows Server 2022,Compliant,Success,22,False,0,INC-88412,None,Medium,Patch in next scheduled maintenance cycle.
-OAG-SQL03,On-Prem,Application/Data,Tier 1,Windows Server 2019,NonCompliant,Failed,51,True,2,CHG-10526,Approved Exception,Critical,Leadership review required. High-risk exception should have compensating controls.
-OAG-PRINT01,On-Prem,Infrastructure,Tier 3,Windows Server 2016,Compliant,Success,17,False,0,CHG-10477,None,Low,Continue standard remediation cadence.
-OAG-MGMT01,Azure,Infrastructure,Tier 2,Windows Server 2022,Compliant,Success,5,False,0,CHG-10518,None,Low,No immediate action.
