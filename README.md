@@ -29,6 +29,20 @@ The first useful question is:
 
 > Can we quickly see which systems are patched, which still need reboot/validation, which have known risk, which ticket/change record owns the work, and which exceptions need leadership review?
 
+## Demo video
+
+GitHub Markdown does not support direct YouTube iframe embeds. The clean way is a clickable thumbnail.
+
+After the walkthrough video is uploaded, replace `REPLACE_WITH_VIDEO_ID` below with the YouTube video ID:
+
+[![Watch the walkthrough](https://img.youtube.com/vi/REPLACE_WITH_VIDEO_ID/maxresdefault.jpg)](https://www.youtube.com/watch?v=REPLACE_WITH_VIDEO_ID)
+
+Fallback plain link:
+
+```text
+https://www.youtube.com/watch?v=REPLACE_WITH_VIDEO_ID
+```
+
 ## What this is not
 
 This is not a monitoring platform, SIEM, backup product, ticketing system, vulnerability scanner, or endpoint management replacement.
@@ -47,9 +61,9 @@ Examples of systems it could consume data from in a real environment:
 
 ## Prototype workflow
 
-The PowerShell prototype now shows the operational flow more clearly:
+The PowerShell prototype is intentionally simple and modular. The main function reads like the workflow:
 
-1. Initialize output and log paths
+1. Initialize output and logging
 2. Check required runtime dependencies
 3. Check optional future integration dependencies
 4. Write a mock install/import plan for missing optional tools when requested
@@ -110,9 +124,10 @@ Supporting sample evidence files:
 
 For a non-technical or leadership review:
 
-1. Read [`ONE-PAGE-CONCEPT.md`](ONE-PAGE-CONCEPT.md)
-2. Open the sample HTML report in [`sample-output/`](sample-output/)
-3. Review [`docs/SAFETY-NOTES.md`](docs/SAFETY-NOTES.md)
+1. Watch the walkthrough video, if linked above
+2. Read [`ONE-PAGE-CONCEPT.md`](ONE-PAGE-CONCEPT.md)
+3. Open the sample HTML report in [`sample-output/`](sample-output/)
+4. Review [`docs/SAFETY-NOTES.md`](docs/SAFETY-NOTES.md)
 
 For a technical review:
 
