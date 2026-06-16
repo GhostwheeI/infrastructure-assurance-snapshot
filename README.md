@@ -24,6 +24,18 @@ This prototype shows how those signals could be combined into:
 - a run log
 - a dependency plan when optional tools are missing
 
+## Sample output
+
+The [`sample-output/`](sample-output/) folder includes static examples of the artifacts the prototype generates during a mock run.
+
+| Artifact | Purpose |
+|---|---|
+| [`Infrastructure-Assurance-Snapshot-SAMPLE.html`](sample-output/Infrastructure-Assurance-Snapshot-SAMPLE.html) | Leadership-readable snapshot showing patch posture, pending reboot exposure, high-risk systems, SolarWinds evidence references, and recommended next actions. |
+| [`Infrastructure-Assurance-Servers-SAMPLE.csv`](sample-output/Infrastructure-Assurance-Servers-SAMPLE.csv) | Administrator-facing work queue that can be filtered by server, owner, criticality, compliance state, deployment status, pending reboot, exception status, and risk. |
+| [`Infrastructure-Assurance-Evidence-SAMPLE.json`](sample-output/Infrastructure-Assurance-Evidence-SAMPLE.json) | Structured evidence output that preserves run context, scope, safety posture, summary counts, and review questions for audit or change-review use. |
+
+These files are mock artifacts only. They are included so the report format and evidence model can be reviewed without running the script or touching a live environment.
+
 ## Safe-by-default behavior
 
 The prototype is intentionally conservative.
