@@ -2,7 +2,7 @@
 
 A read-only prototype that turns SCCM-style patch/deployment state and SolarWinds-style ticket/change evidence into a leadership-ready infrastructure assurance report.
 
-The point is not to replace SCCM, SolarWinds, monitoring, vulnerability scanning, backup tooling, or SIEM. The point is to sit above existing tools and answer the operational questions leadership actually needs answered:
+The point is not to replace SCCM, SolarWinds, monitoring, vulnerability scanning, backup tooling, or SIEM. The point is to sit above those tools and answer the operational questions leadership actually needs answered:
 
 > What is exposed, what is overdue, who owns it, what ticket/change record proves the work, and what still needs a decision?
 
@@ -10,9 +10,11 @@ The point is not to replace SCCM, SolarWinds, monitoring, vulnerability scanning
 
 The strongest first use case is **SCCM + SolarWinds patch / reboot / vulnerability assurance**.
 
-SCCM remains the technical source for inventory, compliance, deployment state, failed updates, and pending reboot status. SolarWinds remains the evidence source for tickets, incidents, changes, approvals, exceptions, and validation notes.
+SCCM stays the technical source for inventory, compliance, deployment state, failed updates, and pending reboot status.
 
-This prototype demonstrates how those signals could be combined into:
+SolarWinds stays the evidence source for tickets, incidents, changes, approvals, exceptions, and validation notes.
+
+This prototype shows how those signals could be combined into:
 
 - an HTML leadership report
 - a CSV infrastructure work queue
@@ -22,7 +24,9 @@ This prototype demonstrates how those signals could be combined into:
 
 ## Demo video
 
-GitHub Markdown does not support direct YouTube iframe embeds. After the walkthrough is uploaded, replace `REPLACE_WITH_VIDEO_ID` with the YouTube video ID:
+GitHub Markdown does not support direct YouTube iframe embeds.
+
+After the walkthrough is uploaded, replace `REPLACE_WITH_VIDEO_ID` with the YouTube video ID:
 
 [![Watch the walkthrough](https://img.youtube.com/vi/REPLACE_WITH_VIDEO_ID/maxresdefault.jpg)](https://www.youtube.com/watch?v=REPLACE_WITH_VIDEO_ID)
 
@@ -51,7 +55,7 @@ That avoids accidental output under `C:\Windows\System32` when PowerShell is lau
 
 ## Prototype workflow
 
-The script is dependency-first and grouped for easy review. Console output is timestamped, but it is intentionally structured so the run does not appear as a wall of unrelated log lines.
+The script is dependency-first and grouped for easier review. Console output is timestamped, but it is structured so the run does not turn into a wall of unrelated log lines.
 
 The walkthrough is organized into five sections:
 
@@ -61,11 +65,11 @@ The walkthrough is organized into five sections:
 4. Artifact generation
 5. Completion summary
 
-The dependency preflight prints required checks, optional checks, summary, warnings, and mock install-plan notes together before report generation begins.
+The dependency preflight prints required checks, optional checks, summary, warnings, and mock install-plan notes together before report generation starts.
 
 ## Console presentation
 
-The console view is designed for a short screen-recorded walkthrough.
+The console view is built for a short screen-recorded walkthrough.
 
 It uses:
 
@@ -96,7 +100,7 @@ Example structure:
 
 ## Configurable mock targeting
 
-The run displays a scoped targeting block so it is clear the concept is configurable, not blindly targeting an entire environment.
+The run displays a scoped targeting block so it is clear the concept is configurable, not blindly pointed at an entire environment.
 
 Available mock scopes:
 
@@ -159,7 +163,7 @@ Optional future integration checks:
 - SolarWinds `SwisPowerShell` module
 - Microsoft Graph authentication module
 
-Auto-install is denied by default. If `-MockDependencyInstall` is used, the script writes a plan showing what would be needed later, but performs no install, import, download, or system change.
+Auto-install is denied by default. If `-MockDependencyInstall` is used, the script writes a plan showing what would be needed later, but does not install, import, download, or change anything.
 
 ## Production notes
 
@@ -182,7 +186,7 @@ It uses:
 - local report/evidence/log artifacts
 - HTML encoding before report rendering
 
-Before any production use, review with normal PowerShell standards and run PSScriptAnalyzer:
+Before any production use, review it with normal PowerShell standards and run PSScriptAnalyzer:
 
 ```powershell
 Invoke-ScriptAnalyzer -Path .\prototype\Invoke-InfrastructureAssuranceSnapshot.ps1
