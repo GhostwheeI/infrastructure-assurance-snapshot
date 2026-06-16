@@ -19,43 +19,50 @@ Exit criteria:
 - Infrastructure and Security agree the data model is useful
 - No production access is required
 
-## Phase 1: Patch / Reboot / Vulnerability Assurance
+## Phase 1: SCCM + SolarWinds Patch / Reboot / Vulnerability Assurance
 
-Goal: produce a weekly operational risk view for Windows servers.
+Goal: produce a weekly operational risk view for Windows servers by correlating SCCM technical state with SolarWinds work/evidence records.
+
+SCCM remains the authoritative source for patch/deployment/compliance status. SolarWinds remains the authoritative source for tickets, incidents, changes, approvals, exceptions, and work notes.
 
 Data sources:
 
-- Server inventory
-- Owner/team mapping
-- Criticality tier
-- Patch date / build / hotfix data
+- SCCM server inventory
+- SCCM collection membership
+- SCCM update compliance status
+- SCCM deployment status
+- SCCM failed/unknown update state
 - Pending reboot state
-- Maintenance window
+- SolarWinds ticket/change/incident reference
+- SolarWinds assignment group / owner
+- SolarWinds approval or exception status
+- Criticality tier / asset owner mapping
 - Vulnerability export or known-exploited vulnerability mapping
-- Change-ticket or exception reference
 
 Outputs:
 
 - Executive dashboard
-- CSV work queue
+- CSV infrastructure work queue
 - JSON evidence file
 - Top-risk action list
 - Exception register
+- SCCM/SolarWinds evidence-gap list
 
 Acceptance criteria:
 
 - At least 90% of in-scope servers are represented
 - Unknown owner count is below 10%
+- SCCM compliance state is visible
 - Pending reboot state is visible
-- Patch age is visible
+- Failed/unknown update state is visible
 - Critical/high-risk systems are clearly prioritized
-- Findings map to owner, change ticket, or exception
+- Findings map to SolarWinds ticket/change/exception evidence where available
 
 Kill criteria:
 
-- Existing tooling already provides the same cross-source view reliably
+- Existing SCCM/SolarWinds reporting already provides the same cross-source leadership view reliably
 - Server ownership data is not available or cannot be maintained
-- Findings cannot be mapped to accountable owners
+- Findings cannot be mapped to accountable owners or work records
 
 ## Phase 2: Identity Drift Sentinel
 
@@ -95,6 +102,7 @@ Data sources:
 - System criticality map
 - RTO/RPO targets
 - Application owner mapping
+- SolarWinds ticket/change/evidence references where applicable
 
 Outputs:
 
@@ -121,7 +129,7 @@ Inputs:
 - Risk summary
 - Backout plan
 - Validation steps
-- Evidence links
+- SolarWinds change/ticket/evidence links
 
 Outputs:
 
