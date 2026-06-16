@@ -24,7 +24,7 @@ This prototype shows how those signals could be combined into:
 
 ## Demo video
 
-[![Watch the walkthrough](https://img.youtube.com/vi/bXrC129iTeo/maxresdefault.jpg)](https://www.youtube.com/watch?v=bXrC129iTeo)
+[![Watch the walkthrough](https://i.postimg.cc/3rLtM6Ct/example.png)](https://www.youtube.com/watch?v=bXrC129iTeo)
 
 ## Safe-by-default behavior
 
