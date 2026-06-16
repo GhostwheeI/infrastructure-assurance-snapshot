@@ -63,7 +63,7 @@ Examples of systems it could consume data from in a real environment:
 
 The PowerShell prototype is intentionally simple and modular. The main function reads like the workflow:
 
-1. Initialize output and logging
+1. Initialize a native temp-based run folder and logging
 2. Check required runtime dependencies
 3. Check optional future integration dependencies
 4. Write a mock install/import plan for missing optional tools when requested
@@ -73,6 +73,26 @@ The PowerShell prototype is intentionally simple and modular. The main function 
 8. Fail cleanly with a logged error if something breaks
 
 This is still a prototype. Dependency installation is simulated, not performed.
+
+## Output location
+
+By default, generated artifacts are written under the native OS temp directory, not the current working directory.
+
+On Windows that resolves to a path similar to:
+
+```text
+%TEMP%\InfrastructureAssuranceSnapshot\Run-yyyyMMdd-HHmmss\
+```
+
+This avoids dumping files into `C:\Windows\System32` when PowerShell is launched elevated or from an unexpected working directory.
+
+You can still provide an explicit output base path:
+
+```powershell
+.\prototype\Invoke-InfrastructureAssuranceSnapshot.ps1 -MockData -OutputPath "C:\Temp\InfrastructureAssuranceSnapshot"
+```
+
+Each run creates its own timestamped subfolder inside the selected base path.
 
 ## Safety model
 
@@ -88,6 +108,7 @@ The prototype is intentionally safe-by-default.
 - No real dependency downloads or installs
 - Mock-data mode available for safe review
 - Basic error handling and timestamped logging included
+- Default output uses a temp-based per-run folder
 
 The PowerShell prototype is separated under [`prototype/`](prototype/) so reviewers can inspect it without treating the repo as something that should be run in production.
 
