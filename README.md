@@ -15,7 +15,7 @@ Infrastructure Assurance Snapshot is a lightweight reporting concept. It demonst
 - Change-ticket / exception evidence
 - Executive-readable operational risk summaries
 
-The primary output is a local HTML report backed by CSV and JSON evidence files.
+The primary output is a local HTML report backed by CSV, JSON evidence, and a run log.
 
 ## Practical phase-one fit
 
@@ -45,6 +45,21 @@ Examples of systems it could consume data from in a real environment:
 - Veeam, Rubrik, Commvault, NetBackup, or similar backup platforms
 - SIEM or monitoring platforms such as Sentinel, Splunk, SolarWinds, PRTG, or similar tools
 
+## Prototype workflow
+
+The PowerShell prototype now shows the operational flow more clearly:
+
+1. Initialize output and log paths
+2. Check required runtime dependencies
+3. Check optional future integration dependencies
+4. Write a mock install/import plan for missing optional tools when requested
+5. Load mock SCCM + SolarWinds assurance data
+6. Validate normalized rows and evidence references
+7. Generate HTML, CSV, JSON, dependency-plan, and log artifacts
+8. Fail cleanly with a logged error if something breaks
+
+This is still a prototype. Dependency installation is simulated, not performed.
+
 ## Safety model
 
 The prototype is intentionally safe-by-default.
@@ -56,8 +71,9 @@ The prototype is intentionally safe-by-default.
 - No Active Directory writes
 - No service restarts
 - No firewall changes
-- No external dependencies
+- No real dependency downloads or installs
 - Mock-data mode available for safe review
+- Basic error handling and timestamped logging included
 
 The PowerShell prototype is separated under [`prototype/`](prototype/) so reviewers can inspect it without treating the repo as something that should be run in production.
 
@@ -102,12 +118,31 @@ For a technical review:
 
 1. Inspect [`prototype/Invoke-InfrastructureAssuranceSnapshot.ps1`](prototype/Invoke-InfrastructureAssuranceSnapshot.ps1)
 2. Run it only in mock-data mode first
-3. Review the generated HTML, CSV, and JSON outputs
+3. Review the generated HTML, CSV, JSON, dependency-plan, and log outputs
 
 ```powershell
 Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
-.\prototype\Invoke-InfrastructureAssuranceSnapshot.ps1 -MockData
+.\prototype\Invoke-InfrastructureAssuranceSnapshot.ps1 -MockData -MockDependencyInstall
 ```
+
+## Dependency behavior
+
+The prototype checks built-in requirements and future integration tools.
+
+Required for mock-data report generation:
+
+- PowerShell 5.1+
+- `ConvertTo-Json`
+- `Export-Csv`
+- Local file write access to the output directory
+
+Optional future integration checks:
+
+- SCCM / MECM `ConfigurationManager` PowerShell module
+- SolarWinds `SwisPowerShell` module
+- Microsoft Graph authentication module
+
+When `-MockDependencyInstall` is used, missing optional dependencies are written to a dependency-plan text file. No download, install, import, or system change is performed.
 
 ## MVP recommendation
 
