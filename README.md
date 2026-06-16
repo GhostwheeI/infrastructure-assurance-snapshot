@@ -29,11 +29,72 @@ This prototype shows how those signals could be combined into:
 
 The [`sample-output/`](sample-output/) folder includes static examples of the artifacts the prototype generates during a mock run.
 
-| Artifact | Purpose |
-|---|---|
-| [`Infrastructure-Assurance-Snapshot-SAMPLE.html`](sample-output/Infrastructure-Assurance-Snapshot-SAMPLE.html) | Leadership-readable snapshot showing patch posture, pending reboot exposure, high-risk systems, SolarWinds evidence references, and recommended next actions. |
-| [`Infrastructure-Assurance-Servers-SAMPLE.csv`](sample-output/Infrastructure-Assurance-Servers-SAMPLE.csv) | Administrator-facing work queue that can be filtered by server, owner, criticality, compliance state, deployment status, pending reboot, exception status, and risk. |
-| [`Infrastructure-Assurance-Evidence-SAMPLE.json`](sample-output/Infrastructure-Assurance-Evidence-SAMPLE.json) | Structured evidence output that preserves run context, scope, safety posture, summary counts, and review questions for audit or change-review use. |
+(https://i.postimg.cc/NjWgdpzd/Infrastructure-Assurance-Snapshot.jpg)
+
+```text
+Infrastructure Assurance Snapshot log
+Started: 2026-06-16T18:45:45.7531990-04:00
+OutputPath: C:\Users\Ghostwheel\AppData\Local\Temp\InfrastructureAssuranceSnapshot\Run-20260616-184545
+MockScope: Default
+DemoPaceSeconds: 1
+
+[2026-06-16 18:45:45] [STEP] Infrastructure Assurance Snapshot
+[2026-06-16 18:45:45] [INFO] Read-only SCCM + SolarWinds assurance prototype
+[2026-06-16 18:45:45] [INFO] Output: C:\Users\Ghostwheel\AppData\Local\Temp\InfrastructureAssuranceSnapshot\Run-20260616-184545
+[2026-06-16 18:45:45] [INFO] Demo pacing: 1 second(s) between major sections
+[2026-06-16 18:45:45] [STEP] [1/5] Dependency preflight
+[2026-06-16 18:45:45] [INFO]   Grouped checks before report generation. Optional integrations are not required for mock mode.
+[2026-06-16 18:45:45] [INFO]   Install policy:    Default deny; no downloads or installs are performed
+[2026-06-16 18:45:45] [INFO]   Mock mode:         Missing optional modules are skipped and documented
+[2026-06-16 18:45:45] [INFO]   Required runtime
+[2026-06-16 18:45:45] [OK]   [OK]   PowerShell Runtime               PowerShell 7.6.1
+[2026-06-16 18:45:45] [OK]   [OK]   JSON Serialization               available
+[2026-06-16 18:45:45] [OK]   [OK]   CSV Export                       available
+[2026-06-16 18:45:45] [INFO]   Optional future integrations
+[2026-06-16 18:45:45] [SKIP]   [SKIP] SCCM / MECM Module               not installed; optional for mock run
+[2026-06-16 18:45:45] [SKIP]   [SKIP] SolarWinds SWIS Module           not installed; optional for mock run
+[2026-06-16 18:45:45] [SKIP]   [SKIP] Microsoft Graph Auth             not installed; optional for mock run
+[2026-06-16 18:45:45] [OK]   [OK]   Preflight summary                required 3/3 ok; optional skipped 3/3
+[2026-06-16 18:45:45] [WARN]   [WARN] Optional integrations            skipped for mock run; production notes cover approved setup path
+[2026-06-16 18:45:45] [PLAN]   [PLAN] Mock dependency plan             C:\Users\Ghostwheel\AppData\Local\Temp\InfrastructureAssuranceSnapshot\Run-20260616-184545\Dependency-Plan.txt
+[2026-06-16 18:45:46] [STEP] [2/5] Scoped mock targeting
+[2026-06-16 18:45:46] [INFO]   Displays what is configurable without implying full-environment access.
+[2026-06-16 18:45:46] [INFO]   Description:       Default scoped review for a balanced infrastructure assurance snapshot
+[2026-06-16 18:45:46] [INFO]   Scope:             Default
+[2026-06-16 18:45:46] [INFO]   Install policy:    Auto-install denied by default
+[2026-06-16 18:45:46] [INFO]   Mode:              Mock only
+[2026-06-16 18:45:46] [INFO]   SCCM collections
+[2026-06-16 18:45:46] [INFO]     - Windows Servers - Production
+[2026-06-16 18:45:46] [INFO]     - Domain Controllers - Patch Validation
+[2026-06-16 18:45:46] [INFO]     - Tier 1 Application Servers
+[2026-06-16 18:45:46] [INFO]   SolarWinds queues
+[2026-06-16 18:45:46] [INFO]     - Infrastructure Change Queue
+[2026-06-16 18:45:46] [INFO]     - Application/Data Change Queue
+[2026-06-16 18:45:46] [INFO]     - Incident Follow-up Queue
+[2026-06-16 18:45:46] [INFO]   Report sections
+[2026-06-16 18:45:47] [INFO]     - Patch/Reboot Risk
+[2026-06-16 18:45:47] [INFO]     - SCCM Deployment State
+[2026-06-16 18:45:47] [INFO]     - SolarWinds Evidence
+[2026-06-16 18:45:47] [INFO]     - Exceptions
+[2026-06-16 18:45:47] [INFO]     - Recommended Actions
+[2026-06-16 18:45:48] [STEP] [3/5] Mock data load
+[2026-06-16 18:45:48] [INFO]   Loading scoped SCCM/SolarWinds sample rows.
+[2026-06-16 18:45:48] [INFO]   Live systems:      none contacted
+[2026-06-16 18:45:48] [INFO]   Source mode:       local mock data only
+[2026-06-16 18:45:48] [INFO]   Rows loaded:       6 mock infrastructure records
+[2026-06-16 18:45:49] [STEP] [4/5] Artifact generation
+[2026-06-16 18:45:49] [INFO]   Writing local report, work queue, evidence, and log files.
+[2026-06-16 18:45:49] [OK]   [OK]   HTML report                      C:\Users\Ghostwheel\AppData\Local\Temp\InfrastructureAssuranceSnapshot\Run-20260616-184545\Infrastructure-Assurance-Snapshot.html
+[2026-06-16 18:45:49] [OK]   [OK]   CSV work queue                   C:\Users\Ghostwheel\AppData\Local\Temp\InfrastructureAssuranceSnapshot\Run-20260616-184545\Infrastructure-Assurance-Servers.csv
+[2026-06-16 18:45:49] [OK]   [OK]   JSON evidence                    C:\Users\Ghostwheel\AppData\Local\Temp\InfrastructureAssuranceSnapshot\Run-20260616-184545\Infrastructure-Assurance-Evidence.json
+[2026-06-16 18:45:49] [OK]   [OK]   Run log                          C:\Users\Ghostwheel\AppData\Local\Temp\InfrastructureAssuranceSnapshot\Run-20260616-184545\Infrastructure-Assurance.log
+[2026-06-16 18:45:49] [PLAN]   [PLAN] Dependency plan                  C:\Users\Ghostwheel\AppData\Local\Temp\InfrastructureAssuranceSnapshot\Run-20260616-184545\Dependency-Plan.txt
+[2026-06-16 18:45:50] [STEP] [5/5] Complete
+[2026-06-16 18:45:50] [INFO]   No live systems were contacted. No changes were made.
+[2026-06-16 18:45:50] [INFO]   Next review:       open the generated HTML report and CSV work queue
+[2026-06-16 18:45:50] [INFO]   Result:            complete
+```
+
 
 These files are mock artifacts only. They are included so the report format and evidence model can be reviewed without running the script or touching a live environment.
 
