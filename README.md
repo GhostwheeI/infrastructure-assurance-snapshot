@@ -17,6 +17,18 @@ Infrastructure Assurance Snapshot is a lightweight reporting concept. It demonst
 
 The primary output is a local HTML report backed by CSV and JSON evidence files.
 
+## Practical phase-one fit
+
+The most practical first implementation path is **SCCM + SolarWinds assurance reporting**.
+
+SCCM can remain the authoritative patch/deployment source. SolarWinds can remain the ticketing/change/incident evidence source. This project is the reporting layer above them: it correlates technical state with ownership, ticket/change evidence, exceptions, and leadership-readable risk.
+
+That means the first useful question is not "can this replace SCCM or SolarWinds?" It cannot and should not.
+
+The first useful question is:
+
+> Can we quickly see which systems are patched, which still need reboot/validation, which have known risk, which ticket/change record owns the work, and which exceptions need leadership review?
+
 ## What this is not
 
 This is not a monitoring platform, SIEM, backup product, ticketing system, vulnerability scanner, or endpoint management replacement.
@@ -25,12 +37,12 @@ It is designed to sit above existing tools and make their outputs easier to revi
 
 Examples of systems it could consume data from in a real environment:
 
-- MECM / SCCM, WSUS, Intune, or Azure Update Manager
+- SCCM / MECM, WSUS, Intune, or Azure Update Manager
+- SolarWinds ticketing/change/incident exports
 - Microsoft Defender Vulnerability Management
 - Tenable, Qualys, Rapid7, or similar vulnerability platforms
 - Active Directory and Entra ID / Microsoft Graph exports
 - Veeam, Rubrik, Commvault, NetBackup, or similar backup platforms
-- ServiceNow, Jira Service Management, or other ITSM/change systems
 - SIEM or monitoring platforms such as Sentinel, Splunk, SolarWinds, PRTG, or similar tools
 
 ## Safety model
@@ -74,6 +86,7 @@ Supporting sample evidence files:
 │  └─ Invoke-InfrastructureAssuranceSnapshot.ps1
 └─ docs/
    ├─ SAFETY-NOTES.md
+   ├─ SCCM-SOLARWINDS-INTEGRATION-NOTES.md
    └─ IMPLEMENTATION-ROADMAP.md
 ```
 
@@ -98,18 +111,20 @@ Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
 
 ## MVP recommendation
 
-The most practical first production module is Patch / Reboot / Vulnerability Assurance.
+The most practical first production module is Patch / Reboot / Vulnerability Assurance using SCCM as the authoritative technical source and SolarWinds as the work/evidence source.
 
 It should correlate:
 
-- Server inventory
+- SCCM device/server inventory
+- SCCM update compliance state
+- SCCM deployment status
+- Pending reboot state
 - Owner/team
 - Business criticality
-- Last patch date
-- Pending reboot state
 - Maintenance window
 - Known-exploited vulnerability exposure
-- Change ticket or approved exception
+- SolarWinds ticket/change/incident reference
+- Approved exception or accepted-risk reference
 - Recommended next action
 
 That produces a direct operational work queue for infrastructure teams and a clean risk view for leadership.
