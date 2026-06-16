@@ -1,8 +1,6 @@
-## Screenshot
+# Infrastructure Assurance Snapshot
 
 [![Watch the walkthrough](https://i.postimg.cc/3rLtM6Ct/example.png)](https://www.youtube.com/watch?v=bXrC129iTeo)
-
-# Infrastructure Assurance Snapshot
 
 A read-only prototype that turns SCCM-style patch/deployment state and SolarWinds-style ticket/change evidence into a leadership-ready infrastructure assurance report.
 
