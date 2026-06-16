@@ -15,12 +15,14 @@
     - No real downloads or installs
     - Mock-data mode only for now
     - Local HTML/CSV/JSON/log output only
+    - Default output path uses the OS temp directory, not the current working directory
 
 .PARAMETER MockData
     Uses built-in mock data. This is currently required.
 
 .PARAMETER OutputPath
-    Directory where report files and logs are written.
+    Base directory where report files and logs are written. Defaults to a folder under the OS temp directory so elevated
+    sessions do not accidentally write into System32 or another awkward working directory.
 
 .PARAMETER MockDependencyInstall
     Writes a mock dependency install/import plan for missing optional tools. Nothing is actually installed.
@@ -31,6 +33,9 @@
 .EXAMPLE
     .\Invoke-InfrastructureAssuranceSnapshot.ps1 -MockData -MockDependencyInstall
 
+.EXAMPLE
+    .\Invoke-InfrastructureAssuranceSnapshot.ps1 -MockData -OutputPath "$env:TEMP\InfrastructureAssuranceSnapshot"
+
 .NOTES
     First production step should be export-based: SCCM export + SolarWinds export + asset owner mapping.
     Direct integrations should come later, after the data model is trusted.
@@ -39,7 +44,7 @@
 [CmdletBinding()]
 param(
     [switch]$MockData,
-    [string]$OutputPath = ".\InfrastructureAssuranceSnapshot",
+    [string]$OutputPath = (Join-Path ([System.IO.Path]::GetTempPath()) "InfrastructureAssuranceSnapshot"),
     [switch]$MockDependencyInstall,
     [switch]$StrictDependencies
 )
@@ -49,6 +54,7 @@ $ErrorActionPreference = "Stop"
 
 $script:Run = [ordered]@{
     StartedAt          = Get-Date
+    BaseOutputPath     = $null
     OutputPath         = $null
     LogPath            = $null
     DependencyPlanPath = $null
@@ -57,30 +63,48 @@ $script:Run = [ordered]@{
 function Initialize-Run {
     <#
     .SYNOPSIS
-        Creates the output folder and starts the run log.
+        Creates a per-run output folder and starts the run log.
 
     .DESCRIPTION
-        Keeps the run predictable. Everything this script creates lives under the selected output folder.
-        No scheduled tasks, services, registry entries, or external state.
+        Keeps the run predictable and avoids the classic admin-script mistake of writing output wherever PowerShell happened
+        to start. By default, the base path is under the native OS temp directory. Each execution gets a timestamped run
+        folder so files are grouped cleanly and can be cleaned by normal temp-folder maintenance.
+
+        No scheduled tasks, services, registry entries, or external state are created.
     #>
     param(
         [Parameter(Mandatory)]
         [string]$Path
     )
 
-    if (-not (Test-Path -LiteralPath $Path)) {
-        New-Item -ItemType Directory -Path $Path -Force | Out-Null
+    $basePath = if ([string]::IsNullOrWhiteSpace($Path)) {
+        Join-Path ([System.IO.Path]::GetTempPath()) "InfrastructureAssuranceSnapshot"
+    }
+    else {
+        $Path
+    }
+
+    if (-not (Test-Path -LiteralPath $basePath)) {
+        New-Item -ItemType Directory -Path $basePath -Force | Out-Null
     }
 
     $stamp = Get-Date -Format "yyyyMMdd-HHmmss"
-    $script:Run.OutputPath = (Resolve-Path -LiteralPath $Path).Path
-    $script:Run.LogPath = Join-Path $script:Run.OutputPath "Infrastructure-Assurance-$stamp.log"
-    $script:Run.DependencyPlanPath = Join-Path $script:Run.OutputPath "Dependency-Plan-$stamp.txt"
+    $runPath = Join-Path $basePath "Run-$stamp"
+
+    if (-not (Test-Path -LiteralPath $runPath)) {
+        New-Item -ItemType Directory -Path $runPath -Force | Out-Null
+    }
+
+    $script:Run.BaseOutputPath = (Resolve-Path -LiteralPath $basePath).Path
+    $script:Run.OutputPath = (Resolve-Path -LiteralPath $runPath).Path
+    $script:Run.LogPath = Join-Path $script:Run.OutputPath "Infrastructure-Assurance.log"
+    $script:Run.DependencyPlanPath = Join-Path $script:Run.OutputPath "Dependency-Plan.txt"
 
     @(
         "Infrastructure Assurance Snapshot log"
         "Started: $((Get-Date).ToString('o'))"
-        "OutputPath: $($script:Run.OutputPath)"
+        "BaseOutputPath: $($script:Run.BaseOutputPath)"
+        "RunOutputPath:  $($script:Run.OutputPath)"
         ""
     ) | Set-Content -Path $script:Run.LogPath -Encoding UTF8
 }
@@ -535,10 +559,9 @@ function Export-Artifacts {
         [array]$Dependencies
     )
 
-    $stamp = Get-Date -Format "yyyyMMdd-HHmmss"
-    $csvPath = Join-Path $script:Run.OutputPath "Infrastructure-Assurance-Servers-$stamp.csv"
-    $jsonPath = Join-Path $script:Run.OutputPath "Infrastructure-Assurance-Evidence-$stamp.json"
-    $htmlPath = Join-Path $script:Run.OutputPath "Infrastructure-Assurance-Snapshot-$stamp.html"
+    $csvPath = Join-Path $script:Run.OutputPath "Infrastructure-Assurance-Servers.csv"
+    $jsonPath = Join-Path $script:Run.OutputPath "Infrastructure-Assurance-Evidence.json"
+    $htmlPath = Join-Path $script:Run.OutputPath "Infrastructure-Assurance-Snapshot.html"
 
     $Rows | Export-Csv -Path $csvPath -NoTypeInformation -Encoding UTF8
 
@@ -579,6 +602,7 @@ function Start-AssuranceSnapshot {
     Initialize-Run -Path $OutputPath
     Write-RunLog -Message "Infrastructure Assurance Snapshot starting."
     Write-RunLog -Message "Mode: $(if ($MockData) { 'Mock data' } else { 'No live connector enabled' })"
+    Write-RunLog -Message "Artifacts will be written to: $($script:Run.OutputPath)"
 
     $dependencies = Invoke-Step -Name "Check dependencies" -ScriptBlock {
         Test-Dependencies -MockInstall:$MockDependencyInstall -Strict:$StrictDependencies
