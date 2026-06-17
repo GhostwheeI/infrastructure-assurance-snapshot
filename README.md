@@ -5,7 +5,7 @@ A read-only prototype that turns SCCM-style patch/deployment state and SolarWind
 
 A read-only prototype that turns SCCM-style patch/deployment state and SolarWinds-style ticket/change evidence into a leadership-ready infrastructure assurance report.
 
-The point is not to replace SCCM, SolarWinds, monitoring, vulnerability scanning, backup tooling, or SIEM. The point is to sit above those tools and answer the operational questions leadership needs answered.
+The point is not to replace SCCM, SolarWinds, monitoring, vulnerability scanning, backup tooling, or SIEM. The point is to sit above those tools and answer the operational questions leadership needs answered:
 
 > What is exposed, what is overdue, who owns it, what ticket/change record proves the work, and what still needs a decision?
 
@@ -31,11 +31,15 @@ The [`sample-output/`](sample-output/) folder includes static examples of the ar
 
 ![Infrastructure Assurance Snapshot Dashboard](https://i.postimg.cc/NjWgdpzd/Infrastructure-Assurance-Snapshot.jpg)
 
-Leadership-readable snapshot showing patch posture, pending reboot exposure, high-risk systems, SolarWinds evidence references, and recommended next actions.
+**Leadership-readable snapshot** showing patch posture, pending reboot exposure, high-risk systems, SolarWinds evidence references, and recommended next actions.
 
 ![Infrastructure Assurance Servers](https://i.postimg.cc/q7bWmRR1/ss.png)
 
-Administrator-facing work queue that can be filtered by server, owner, criticality, compliance state, deployment status, pending reboot, exception status, and risk.
+**Administrator-facing work queue** filterable by server, owner, criticality, compliance state, deployment status, pending reboot, exception status, and risk.
+
+**Dependency Plan**
+
+Mock installation plan documenting required and optional dependencies, their purpose, current status, and approved sourcing path for production use.
 
 ```text
 Dependency install/import plan
@@ -54,6 +58,11 @@ Dependency: Microsoft Graph Auth
 Purpose:    Future Entra ID read-only integration
 Plan:       Use approved internal package source
 ```
+
+**Evidence File**
+
+Structured evidence output preserving run context, scope, safety posture, summary counts, and review questions for audit or change-review use.
+
 ```json
 {
   "GeneratedAt": "2026-06-16T18:45:49.0978770-04:00",
@@ -224,7 +233,10 @@ Plan:       Use approved internal package source
   ]
 }
 ```
-Structured evidence output that preserves run context, scope, safety posture, summary counts, and review questions for audit or change-review use.
+
+**Run Log**
+
+Timestamped execution log documenting dependency checks, scope validation, data load, artifact generation, and completion summary with status codes.
 
 ```text
 Infrastructure Assurance Snapshot log
@@ -289,7 +301,6 @@ DemoPaceSeconds: 1
 [2026-06-16 18:45:50] [INFO]   Next review:       open the generated HTML report and CSV work queue
 [2026-06-16 18:45:50] [INFO]   Result:            complete
 ```
-
 
 These files are mock artifacts only. They are included so the report format and evidence model can be reviewed without running the script or touching a live environment.
 
