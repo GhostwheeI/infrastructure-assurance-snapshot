@@ -234,9 +234,6 @@ Structured evidence output preserving run context, scope, safety posture, summar
 }
 ```
 
-**[Infrastructure-Assurance.log](sample-output/Infrastructure-Assurance.log)**
-
-Timestamped execution log documenting dependency checks, scope validation, data load, artifact generation, and completion summary with status codes.
 
 ```text
 Infrastructure Assurance Snapshot log
@@ -301,6 +298,9 @@ DemoPaceSeconds: 1
 [2026-06-16 18:45:50] [INFO]   Next review:       open the generated HTML report and CSV work queue
 [2026-06-16 18:45:50] [INFO]   Result:            complete
 ```
+**[Infrastructure-Assurance.log](sample-output/Infrastructure-Assurance.log)**
+
+Timestamped execution log documenting dependency checks, scope validation, data load, artifact generation, and completion summary with status codes.
 
 These files are mock artifacts only. They are included so the report format and evidence model can be reviewed without running the script or touching a live environment.
 
