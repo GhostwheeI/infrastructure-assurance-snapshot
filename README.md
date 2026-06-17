@@ -37,10 +37,6 @@ The [`sample-output/`](sample-output/) folder includes static examples of the ar
 
 **[Infrastructure-Assurance-Servers.csv](sample-output/Infrastructure-Assurance-Servers.csv)** — administrator-facing work queue filterable by server, owner, criticality, compliance state, deployment status, pending reboot, exception status, and risk.
 
-**[Dependency-Plan.txt](sample-output/Dependency-Plan.txt)**
-
-Mock installation plan documenting required and optional dependencies, their purpose, current status, and approved sourcing path for production use.
-
 ```text
 Dependency install/import plan
 Policy: Auto-install is denied by default. These are mock plans only.
@@ -58,10 +54,10 @@ Dependency: Microsoft Graph Auth
 Purpose:    Future Entra ID read-only integration
 Plan:       Use approved internal package source
 ```
+**[Dependency-Plan.txt](sample-output/Dependency-Plan.txt)**
 
-[Infrastructure-Assurance-Evidence.json](sample-output/Infrastructure-Assurance-Evidence.json)
+Mock installation plan documenting required and optional dependencies, their purpose, current status, and approved sourcing path for production use.
 
-Structured evidence output preserving run context, scope, safety posture, summary counts, and review questions for audit or change-review use.
 
 ```json
 {
@@ -233,7 +229,9 @@ Structured evidence output preserving run context, scope, safety posture, summar
   ]
 }
 ```
+[Infrastructure-Assurance-Evidence.json](sample-output/Infrastructure-Assurance-Evidence.json)
 
+Structured evidence output preserving run context, scope, safety posture, summary counts, and review questions for audit or change-review use.
 
 ```text
 Infrastructure Assurance Snapshot log
