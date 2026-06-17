@@ -59,7 +59,7 @@ Purpose:    Future Entra ID read-only integration
 Plan:       Use approved internal package source
 ```
 
-**[Infrastructure-Assurance-Evidence.json](sample-output/Infrastructure-Assurance-Evidence.json)**
+[Infrastructure-Assurance-Evidence.json](sample-output/Infrastructure-Assurance-Evidence.json)
 
 Structured evidence output preserving run context, scope, safety posture, summary counts, and review questions for audit or change-review use.
 
