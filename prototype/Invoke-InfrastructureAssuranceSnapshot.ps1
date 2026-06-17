@@ -3,8 +3,38 @@
     Generates a read-only Infrastructure Assurance Snapshot report.
 
 .DESCRIPTION
-    Dependency-first mock prototype for SCCM + SolarWinds infrastructure assurance.
-    Console output is structured for short walkthroughs: timestamped sections, aligned summaries, grouped warnings, and minimal wall-of-text behavior.
+    Mock-data prototype for SCCM + SolarWinds infrastructure assurance.
+    The script generates local HTML, CSV, JSON, log, and dependency-plan artifacts without contacting live systems.
+
+.PARAMETER MockData
+    Required for the current prototype. Confirms the run uses local mock data only.
+
+.PARAMETER MockScope
+    Selects the mock review scope. Valid values are Default, PatchOnly, Tier1Only, and IdentityAndRecoveryPreview.
+
+.PARAMETER OutputPath
+    Base output directory. Each run creates a timestamped child folder under this path.
+
+.PARAMETER MockDependencyInstall
+    Writes a dependency plan for missing optional modules. No module is downloaded, installed, or imported.
+
+.PARAMETER StrictDependencies
+    Treats missing optional modules as blocking. Useful only for validation testing.
+
+.PARAMETER DemoPaceSeconds
+    Adds a short pause between major console sections for walkthrough recordings.
+
+.PARAMETER OpenOutputFolder
+    Controls whether the output folder is opened at completion. Valid values are Ask, Yes, and No.
+
+.EXAMPLE
+    .\Invoke-InfrastructureAssuranceSnapshot.ps1 -MockData -MockDependencyInstall -OpenOutputFolder No
+
+.EXAMPLE
+    .\Invoke-InfrastructureAssuranceSnapshot.ps1 -MockData -MockScope Tier1Only -MockDependencyInstall -DemoPaceSeconds 1 -OpenOutputFolder Ask
+
+.NOTES
+    Safety posture: mock data only, read-only, no live authentication, no remediation, no dependency installation, and no write-back to SCCM, SolarWinds, AD, Entra ID, registry, services, firewall, or tickets.
 #>
 
 [CmdletBinding()]
@@ -42,11 +72,11 @@ function Initialize-Run {
     $script:Run.DependencyPlanPath = Join-Path $script:Run.OutputPath 'Dependency-Plan.txt'
 
     @(
-        'Infrastructure Assurance Snapshot log'
-        "Started: $((Get-Date).ToString('o'))"
-        "OutputPath: $($script:Run.OutputPath)"
-        "MockScope: $MockScope"
-        "DemoPaceSeconds: $DemoPaceSeconds"
+        'Infrastructure Assurance Snapshot log',
+        "Started: $((Get-Date).ToString('o'))",
+        "OutputPath: $($script:Run.OutputPath)",
+        "MockScope: $MockScope",
+        "DemoPaceSeconds: $DemoPaceSeconds",
         ''
     ) | Set-Content -Path $script:Run.LogPath -Encoding UTF8
 }
@@ -78,7 +108,7 @@ function Write-Section {
     Write-Host ''
     Write-ConsoleLine $Title 'Cyan' 'STEP'
     Write-Host ("{0}  {1}" -f '        ', ('-' * 72)) -ForegroundColor DarkGray
-    if ($Subtitle) { Write-ConsoleLine ("  $Subtitle") 'DarkGray' 'INFO' }
+    if ($Subtitle) { Write-ConsoleLine "  $Subtitle" 'DarkGray' 'INFO' }
 }
 
 function Write-StatusLine {
@@ -110,7 +140,11 @@ function Write-StatusLine {
     $paddedName = if ($Name.Length -lt 32) { $Name.PadRight(32) } else { $Name }
     $line = "  $label $paddedName"
     if ($Detail) { $line += " $Detail" }
-    Write-ConsoleLine $line $color $Status
+
+    Write-ConsoleLine $line $color $Status -NoLog
+    $logMessage = $Name
+    if ($Detail) { $logMessage += " $Detail" }
+    Write-LogOnly $logMessage $Status
 }
 
 function Write-KeyValueBlock {
@@ -128,11 +162,11 @@ function Start-DemoPace {
 
 function Get-DependencyManifest {
     @(
-        [pscustomobject]@{Name='PowerShell Runtime';Required=$true;Type='Runtime';Check='PowerShellVersion';Minimum='5.1';Purpose='Runs the prototype';Plan='Use Windows PowerShell 5.1+ or approved PowerShell 7 deployment'}
-        [pscustomobject]@{Name='JSON Serialization';Required=$true;Type='Command';Check='ConvertTo-Json';Minimum=$null;Purpose='Writes JSON evidence';Plan='Built into supported PowerShell'}
-        [pscustomobject]@{Name='CSV Export';Required=$true;Type='Command';Check='Export-Csv';Minimum=$null;Purpose='Writes CSV work queue';Plan='Built into supported PowerShell'}
-        [pscustomobject]@{Name='SCCM / MECM Module';Required=$false;Type='Module';Check='ConfigurationManager';Minimum=$null;Purpose='Future SCCM read-only integration';Plan='Use approved SCCM Admin Console source'}
-        [pscustomobject]@{Name='SolarWinds SWIS Module';Required=$false;Type='Module';Check='SwisPowerShell';Minimum=$null;Purpose='Future SolarWinds read-only integration';Plan='Use approved internal package source'}
+        [pscustomobject]@{Name='PowerShell Runtime';Required=$true;Type='Runtime';Check='PowerShellVersion';Minimum='5.1';Purpose='Runs the prototype';Plan='Use Windows PowerShell 5.1+ or approved PowerShell 7 deployment'},
+        [pscustomobject]@{Name='JSON Serialization';Required=$true;Type='Command';Check='ConvertTo-Json';Minimum=$null;Purpose='Writes JSON evidence';Plan='Built into supported PowerShell'},
+        [pscustomobject]@{Name='CSV Export';Required=$true;Type='Command';Check='Export-Csv';Minimum=$null;Purpose='Writes CSV work queue';Plan='Built into supported PowerShell'},
+        [pscustomobject]@{Name='SCCM / MECM Module';Required=$false;Type='Module';Check='ConfigurationManager';Minimum=$null;Purpose='Future SCCM read-only integration';Plan='Use approved SCCM Admin Console source'},
+        [pscustomobject]@{Name='SolarWinds SWIS Module';Required=$false;Type='Module';Check='SwisPowerShell';Minimum=$null;Purpose='Future SolarWinds read-only integration';Plan='Use approved internal package source'},
         [pscustomobject]@{Name='Microsoft Graph Auth';Required=$false;Type='Module';Check='Microsoft.Graph.Authentication';Minimum=$null;Purpose='Future Entra ID read-only integration';Plan='Use approved internal package source'}
     )
 }
@@ -154,7 +188,7 @@ function Test-Dependency {
     elseif ($Dependency.Type -eq 'Module') {
         $module = Get-Module -ListAvailable -Name $Dependency.Check | Select-Object -First 1
         $found = $null -ne $module
-        $details = if ($found) { "available: $($module.Name)" } else { "not installed; optional for mock run" }
+        $details = if ($found) { "available: $($module.Name)" } else { 'not installed; optional for mock run' }
     }
 
     [pscustomobject]@{
@@ -269,7 +303,7 @@ function Get-MockScopeConfiguration {
             $config.ReportSections = @('Critical System Risk','Pending Reboots','Exceptions')
         }
         'IdentityAndRecoveryPreview' {
-            $config.Description = 'Preview of identity hygiene and recovery evidence joining later'
+            $config.Description = 'Preview scope showing where identity hygiene and recovery evidence could join later'
             $config.SccmCollections = @('Windows Servers - Production')
             $config.SolarWindsQueues = @('Infrastructure Change Queue','Identity Request Queue','Backup Validation Queue')
             $config.ReportSections = @('Patch/Reboot Risk','Identity Placeholder','Recovery Placeholder')
@@ -332,12 +366,12 @@ function Get-MockRows {
     param([string]$Scope)
 
     $rows = @(
-        @{ServerName='OAG-DC01';Owner='Infrastructure';Criticality='Tier 1';SCCMCompliance='Compliant';DeploymentState='Success';DaysSincePatch=9;PendingReboot=$false;KnownExploitedVulns=0;SolarWindsRecord='CHG-10482';ExceptionStatus='None';RecommendedAction='No immediate action. Maintain normal cadence.'}
-        @{ServerName='OAG-FS02';Owner='End User Services';Criticality='Tier 1';SCCMCompliance='NonCompliant';DeploymentState='Success';DaysSincePatch=38;PendingReboot=$true;KnownExploitedVulns=1;SolarWindsRecord='CHG-10511';ExceptionStatus='None';RecommendedAction='Prioritize remediation; reboot pending after approved patch window.'}
-        @{ServerName='OAG-APP07';Owner='Application/Data';Criticality='Tier 2';SCCMCompliance='Compliant';DeploymentState='Success';DaysSincePatch=22;PendingReboot=$false;KnownExploitedVulns=0;SolarWindsRecord='INC-88412';ExceptionStatus='None';RecommendedAction='Patch in next scheduled maintenance cycle.'}
-        @{ServerName='OAG-SQL03';Owner='Application/Data';Criticality='Tier 1';SCCMCompliance='NonCompliant';DeploymentState='Failed';DaysSincePatch=51;PendingReboot=$true;KnownExploitedVulns=2;SolarWindsRecord='CHG-10526';ExceptionStatus='Approved Exception';RecommendedAction='Leadership review required. High-risk exception should have compensating controls.'}
-        @{ServerName='OAG-PRINT01';Owner='Infrastructure';Criticality='Tier 3';SCCMCompliance='Compliant';DeploymentState='Success';DaysSincePatch=17;PendingReboot=$false;KnownExploitedVulns=0;SolarWindsRecord='CHG-10477';ExceptionStatus='None';RecommendedAction='Continue standard remediation cadence.'}
-        @{ServerName='OAG-MGMT01';Owner='Infrastructure';Criticality='Tier 2';SCCMCompliance='Compliant';DeploymentState='Success';DaysSincePatch=5;PendingReboot=$false;KnownExploitedVulns=0;SolarWindsRecord='CHG-10518';ExceptionStatus='None';RecommendedAction='No immediate action.'}
+        @{ServerName='AGENCY-DC01';Owner='Infrastructure';Criticality='Tier 1';SCCMCompliance='Compliant';DeploymentState='Success';DaysSincePatch=9;PendingReboot=$false;KnownExploitedVulns=0;SolarWindsRecord='CHG-10482';ExceptionStatus='None';RecommendedAction='No immediate action. Maintain normal cadence.'},
+        @{ServerName='AGENCY-FS02';Owner='End User Services';Criticality='Tier 1';SCCMCompliance='NonCompliant';DeploymentState='Success';DaysSincePatch=38;PendingReboot=$true;KnownExploitedVulns=1;SolarWindsRecord='CHG-10511';ExceptionStatus='None';RecommendedAction='Prioritize remediation; reboot pending after approved patch window.'},
+        @{ServerName='AGENCY-APP07';Owner='Application/Data';Criticality='Tier 2';SCCMCompliance='Compliant';DeploymentState='Success';DaysSincePatch=22;PendingReboot=$false;KnownExploitedVulns=0;SolarWindsRecord='INC-88412';ExceptionStatus='None';RecommendedAction='Patch in next scheduled maintenance cycle.'},
+        @{ServerName='AGENCY-SQL03';Owner='Application/Data';Criticality='Tier 1';SCCMCompliance='NonCompliant';DeploymentState='Failed';DaysSincePatch=51;PendingReboot=$true;KnownExploitedVulns=2;SolarWindsRecord='CHG-10526';ExceptionStatus='Approved Exception';RecommendedAction='Leadership review required. High-risk exception should have compensating controls.'},
+        @{ServerName='AGENCY-PRINT01';Owner='Infrastructure';Criticality='Tier 3';SCCMCompliance='Compliant';DeploymentState='Success';DaysSincePatch=17;PendingReboot=$false;KnownExploitedVulns=0;SolarWindsRecord='CHG-10477';ExceptionStatus='None';RecommendedAction='Continue standard remediation cadence.'},
+        @{ServerName='AGENCY-MGMT01';Owner='Infrastructure';Criticality='Tier 2';SCCMCompliance='Compliant';DeploymentState='Success';DaysSincePatch=5;PendingReboot=$false;KnownExploitedVulns=0;SolarWindsRecord='CHG-10518';ExceptionStatus='None';RecommendedAction='No immediate action.'}
     )
 
     if ($Scope -eq 'Tier1Only') { $rows = @($rows | Where-Object { $_.Criticality -eq 'Tier 1' }) }
@@ -353,14 +387,41 @@ function ConvertTo-HtmlText {
     if ($null -eq $Value) { '' } else { [System.Net.WebUtility]::HtmlEncode([string]$Value) }
 }
 
-function New-HtmlReport {
-    param([array]$Rows,[string]$Path,[pscustomobject]$Config)
+function Get-AssuranceSummary {
+    param([array]$Rows,[pscustomobject]$Config)
 
     $total = $Rows.Count
-    $patchCurrent = [math]::Round((@($Rows | Where-Object SCCMCompliance -eq 'Compliant').Count / $total) * 100,1)
+    $patchCurrent = if ($total -gt 0) { [math]::Round((@($Rows | Where-Object SCCMCompliance -eq 'Compliant').Count / $total) * 100,1) } else { 0 }
     $criticalHigh = @($Rows | Where-Object { $_.Risk -in @('Critical','High') }).Count
     $pendingReboots = @($Rows | Where-Object PendingReboot -eq $true).Count
     $kev = (@($Rows | Measure-Object KnownExploitedVulns -Sum).Sum); if ($null -eq $kev) { $kev = 0 }
+    $exceptions = @($Rows | Where-Object { $_.ExceptionStatus -match 'Exception' }).Count
+
+    [pscustomobject]@{
+        ScopeName                         = $Config.ScopeName
+        TotalServers                      = $total
+        PatchCurrentPercent               = $patchCurrent
+        CriticalOrHighRiskSystems         = $criticalHigh
+        PendingRebootCount                = $pendingReboots
+        KnownExploitedVulnerabilityCount  = [int]$kev
+        ExceptionCount                    = $exceptions
+    }
+}
+
+function Get-SafetyPosture {
+    [pscustomobject]@{
+        Mode                       = 'Mock data only'
+        LiveSystemsContacted       = $false
+        ChangesMade                = $false
+        CredentialsStored          = $false
+        DependencyInstallPerformed = $false
+        RemediationPerformed       = $false
+        WriteBackTargets           = @()
+    }
+}
+
+function New-HtmlReport {
+    param([array]$Rows,[string]$Path,[pscustomobject]$Config,[pscustomobject]$Summary)
 
     $tableRows = foreach ($r in $Rows) {
         '<tr><td>{0}</td><td>{1}</td><td>{2}</td><td>{3}</td><td>{4}</td><td>{5}</td><td>{6}</td><td>{7}</td><td>{8}</td><td>{9}</td><td>{10}</td></tr>' -f `
@@ -368,11 +429,29 @@ function New-HtmlReport {
     }
 
     @"
-<!doctype html><html><head><meta charset='utf-8'><title>Infrastructure Assurance Snapshot</title><style>body{font-family:Segoe UI,Arial,sans-serif;margin:28px;background:#f8fafc;color:#1f2937}.card,.callout,table{background:#fff;border:1px solid #e5e7eb}.cards{display:grid;grid-template-columns:repeat(5,1fr);gap:12px}.card{padding:12px;border-radius:8px}.metric{font-size:24px;font-weight:700}td,th{padding:8px;border:1px solid #e5e7eb;text-align:left;font-size:13px}table{width:100%;border-collapse:collapse}.callout{padding:12px;margin:16px 0}</style></head><body>
-<h1>Infrastructure Assurance Snapshot</h1><div>SCCM + SolarWinds assurance concept | Scope: $(ConvertTo-HtmlText $Config.ScopeName)</div>
+<!doctype html>
+<html>
+<head>
+<meta charset='utf-8'>
+<title>Infrastructure Assurance Snapshot</title>
+<style>
+body{font-family:Segoe UI,Arial,sans-serif;margin:28px;background:#f8fafc;color:#1f2937}
+.card,.callout,table{background:#fff;border:1px solid #e5e7eb}
+.cards{display:grid;grid-template-columns:repeat(5,1fr);gap:12px}
+.card{padding:12px;border-radius:8px}.metric{font-size:24px;font-weight:700}
+td,th{padding:8px;border:1px solid #e5e7eb;text-align:left;font-size:13px}
+table{width:100%;border-collapse:collapse}.callout{padding:12px;margin:16px 0}
+</style>
+</head>
+<body>
+<h1>Infrastructure Assurance Snapshot</h1>
+<div>SCCM + SolarWinds assurance concept | Scope: $(ConvertTo-HtmlText $Config.ScopeName)</div>
 <div class='callout'><b>Effective mock configuration:</b> $(ConvertTo-HtmlText $Config.Description)<br><b>SCCM collections:</b> $(ConvertTo-HtmlText ($Config.SccmCollections -join '; '))<br><b>SolarWinds queues:</b> $(ConvertTo-HtmlText ($Config.SolarWindsQueues -join '; '))<br><b>Report sections:</b> $(ConvertTo-HtmlText ($Config.ReportSections -join '; '))</div>
-<div class='cards'><div class='card'>Servers<div class='metric'>$total</div></div><div class='card'>Patch Current<div class='metric'>$patchCurrent%</div></div><div class='card'>Critical/High<div class='metric'>$criticalHigh</div></div><div class='card'>Pending Reboots<div class='metric'>$pendingReboots</div></div><div class='card'>KEV Exposure<div class='metric'>$kev</div></div></div>
-<h2>Risk Work Queue</h2><table><tr><th>Server</th><th>Owner</th><th>Criticality</th><th>SCCM</th><th>Deployment</th><th>Patch Age</th><th>Pending Reboot</th><th>KEV</th><th>SolarWinds</th><th>Risk</th><th>Action</th></tr>$($tableRows -join "`n")</table></body></html>
+<div class='cards'><div class='card'>Servers<div class='metric'>$($Summary.TotalServers)</div></div><div class='card'>Patch Current<div class='metric'>$($Summary.PatchCurrentPercent)%</div></div><div class='card'>Critical/High<div class='metric'>$($Summary.CriticalOrHighRiskSystems)</div></div><div class='card'>Pending Reboots<div class='metric'>$($Summary.PendingRebootCount)</div></div><div class='card'>KEV Exposure<div class='metric'>$($Summary.KnownExploitedVulnerabilityCount)</div></div></div>
+<h2>Risk Work Queue</h2>
+<table><tr><th>Server</th><th>Owner</th><th>Criticality</th><th>SCCM</th><th>Deployment</th><th>Patch Age</th><th>Pending Reboot</th><th>KEV</th><th>SolarWinds</th><th>Risk</th><th>Action</th></tr>$($tableRows -join "`n")</table>
+</body>
+</html>
 "@ | Set-Content -Path $Path -Encoding UTF8
 }
 
@@ -382,10 +461,19 @@ function Export-Artifacts {
     $csv = Join-Path $script:Run.OutputPath 'Infrastructure-Assurance-Servers.csv'
     $json = Join-Path $script:Run.OutputPath 'Infrastructure-Assurance-Evidence.json'
     $html = Join-Path $script:Run.OutputPath 'Infrastructure-Assurance-Snapshot.html'
+    $summary = Get-AssuranceSummary -Rows $Rows -Config $Config
+    $safety = Get-SafetyPosture
 
     $Rows | Export-Csv -Path $csv -NoTypeInformation -Encoding UTF8
-    [pscustomobject]@{GeneratedAt=(Get-Date).ToString('o');EffectiveMockConfiguration=$Config;Dependencies=$Dependencies;Rows=$Rows} | ConvertTo-Json -Depth 8 | Set-Content -Path $json -Encoding UTF8
-    New-HtmlReport -Rows $Rows -Path $html -Config $Config
+    [pscustomobject]@{
+        GeneratedAt                = (Get-Date).ToString('o')
+        Safety                     = $safety
+        Summary                    = $summary
+        EffectiveMockConfiguration = $Config
+        Dependencies               = $Dependencies
+        Rows                       = $Rows
+    } | ConvertTo-Json -Depth 8 | Set-Content -Path $json -Encoding UTF8
+    New-HtmlReport -Rows $Rows -Path $html -Config $Config -Summary $summary
 
     [pscustomobject]@{HtmlReport=$html;ServerCsv=$csv;EvidenceJson=$json;Log=$script:Run.LogPath;DependencyPlan=if(Test-Path $script:Run.DependencyPlanPath){$script:Run.DependencyPlanPath}else{$null}}
 }
@@ -419,9 +507,9 @@ function Start-AssuranceSnapshot {
     $rows = @(Get-MockRows -Scope $MockScope)
     if ($rows.Count -eq 0) { throw 'No rows returned for selected mock scope.' }
     Write-KeyValueBlock @{
-        'Rows loaded'   = "$($rows.Count) mock infrastructure records"
-        'Source mode'   = 'local mock data only'
-        'Live systems'  = 'none contacted'
+        'Rows loaded'  = "$($rows.Count) mock infrastructure records"
+        'Source mode'  = 'local mock data only'
+        'Live systems' = 'none contacted'
     }
     Start-DemoPace
 
@@ -443,9 +531,10 @@ function Start-AssuranceSnapshot {
     Open-OutputFolderIfRequested -Mode $OpenOutputFolder
 }
 
-try { Start-AssuranceSnapshot }
+try {
+    Start-AssuranceSnapshot
+}
 catch {
     if ($script:Run.LogPath) { Write-LogOnly $_.Exception.Message 'ERROR' }
-    Write-ConsoleLine "[FAIL] $($_.Exception.Message)" 'Red' 'ERROR'
-    exit 1
+    throw
 }
