@@ -1,5 +1,23 @@
 {
   "GeneratedAt": "2026-06-16T18:45:49.0978770-04:00",
+  "Safety": {
+    "Mode": "Mock data only",
+    "LiveSystemsContacted": false,
+    "ChangesMade": false,
+    "CredentialsStored": false,
+    "DependencyInstallPerformed": false,
+    "RemediationPerformed": false,
+    "WriteBackTargets": []
+  },
+  "Summary": {
+    "ScopeName": "Default",
+    "TotalServers": 6,
+    "PatchCurrentPercent": 66.7,
+    "CriticalOrHighRiskSystems": 2,
+    "PendingRebootCount": 2,
+    "KnownExploitedVulnerabilityCount": 3,
+    "ExceptionCount": 1
+  },
   "EffectiveMockConfiguration": {
     "ScopeName": "Default",
     "DataMode": "Mock only",
@@ -91,7 +109,7 @@
       "DaysSincePatch": 9,
       "SolarWindsRecord": "CHG-10482",
       "KnownExploitedVulns": 0,
-      "ServerName": "OAG-DC01",
+      "ServerName": "AGENCY-DC01",
       "SCCMCompliance": "Compliant"
     },
     {
@@ -105,7 +123,7 @@
       "DaysSincePatch": 38,
       "SolarWindsRecord": "CHG-10511",
       "KnownExploitedVulns": 1,
-      "ServerName": "OAG-FS02",
+      "ServerName": "AGENCY-FS02",
       "SCCMCompliance": "NonCompliant"
     },
     {
@@ -119,7 +137,7 @@
       "DaysSincePatch": 22,
       "SolarWindsRecord": "INC-88412",
       "KnownExploitedVulns": 0,
-      "ServerName": "OAG-APP07",
+      "ServerName": "AGENCY-APP07",
       "SCCMCompliance": "Compliant"
     },
     {
@@ -133,7 +151,7 @@
       "DaysSincePatch": 51,
       "SolarWindsRecord": "CHG-10526",
       "KnownExploitedVulns": 2,
-      "ServerName": "OAG-SQL03",
+      "ServerName": "AGENCY-SQL03",
       "SCCMCompliance": "NonCompliant"
     },
     {
@@ -147,7 +165,7 @@
       "DaysSincePatch": 17,
       "SolarWindsRecord": "CHG-10477",
       "KnownExploitedVulns": 0,
-      "ServerName": "OAG-PRINT01",
+      "ServerName": "AGENCY-PRINT01",
       "SCCMCompliance": "Compliant"
     },
     {
@@ -161,7 +179,7 @@
       "DaysSincePatch": 5,
       "SolarWindsRecord": "CHG-10518",
       "KnownExploitedVulns": 0,
-      "ServerName": "OAG-MGMT01",
+      "ServerName": "AGENCY-MGMT01",
       "SCCMCompliance": "Compliant"
     }
   ]
