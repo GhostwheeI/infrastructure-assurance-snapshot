@@ -233,6 +233,7 @@ Mock installation plan documenting required and optional dependencies, their pur
 
 Structured evidence output preserving run context, scope, safety posture, summary counts, and review questions for audit or change-review use.
 
+
 ```text
 Infrastructure Assurance Snapshot log
 Started: 2026-06-16T18:45:45.7531990-04:00
