@@ -31,7 +31,11 @@ The [`sample-output/`](sample-output/) folder includes static examples of the ar
 
 ![Infrastructure Assurance Snapshot Dashboard](https://i.postimg.cc/NjWgdpzd/Infrastructure-Assurance-Snapshot.jpg)
 
+Leadership-readable snapshot showing patch posture, pending reboot exposure, high-risk systems, SolarWinds evidence references, and recommended next actions.
+
 ![Infrastructure Assurance Servers](https://i.postimg.cc/q7bWmRR1/ss.png)
+
+Administrator-facing work queue that can be filtered by server, owner, criticality, compliance state, deployment status, pending reboot, exception status, and risk.
 
 ```text
 Dependency install/import plan
@@ -220,6 +224,7 @@ Plan:       Use approved internal package source
   ]
 }
 ```
+Structured evidence output that preserves run context, scope, safety posture, summary counts, and review questions for audit or change-review use.
 
 ```text
 Infrastructure Assurance Snapshot log
