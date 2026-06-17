@@ -2,9 +2,9 @@
 
 ## Concept
 
-Infrastructure Assurance Snapshot is a read-only reporting layer that turns operational infrastructure signals into leadership-ready evidence.
+Infrastructure Assurance Snapshot is a read-only reporting layer that turns existing infrastructure signals into leadership-ready evidence.
 
-It does not replace existing systems. It consolidates the outputs of existing systems into a weekly assurance view for Infrastructure, Security, Change Management, and leadership.
+It does not replace SCCM, SolarWinds, vulnerability scanners, backup platforms, monitoring, SIEM, or ITSM/change systems. It sits above those tools and makes their output easier to review, explain, and act on.
 
 ## Problem it solves
 
@@ -14,21 +14,22 @@ Leadership needs to know:
 
 - What is exposed?
 - What is overdue?
-- What changed?
 - Who owns it?
-- What was approved?
-- Can remediation be proven?
-- Can recovery be proven?
+- What ticket or change record supports the work?
+- What exception or accepted risk exists?
+- What still needs a decision?
 
 Raw consoles rarely answer all of that in one place.
 
-## First MVP
+## First useful module
 
-SCCM + SolarWinds patch, reboot, and vulnerability assurance.
+The practical first module is **SCCM + SolarWinds patch / reboot / vulnerability assurance**.
 
-SCCM remains the technical source for device inventory, compliance, deployment state, and reboot status. SolarWinds remains the work/evidence source for ticket, incident, change, assignment, approval, exception, and validation records.
+SCCM remains the technical source for server inventory, update compliance, deployment state, failed updates, and pending reboot status.
 
-Inputs:
+SolarWinds remains the evidence source for tickets, incidents, changes, assignments, approvals, exceptions, and validation notes.
+
+## Inputs
 
 - SCCM server inventory
 - SCCM update compliance state
@@ -36,19 +37,17 @@ Inputs:
 - Pending reboot state
 - Owner/team
 - Criticality tier
-- Maintenance window
 - Known-exploited vulnerability exposure
 - SolarWinds ticket/change/incident reference
 - Exception or accepted-risk status
 
-Outputs:
+## Outputs
 
-- Executive HTML report
-- CSV work queue
-- JSON evidence file
-- CAB-ready summary
-- Weekly top-risk actions
-- Evidence-gap list
+- Leadership-readable HTML report
+- Administrator-facing CSV work queue
+- Structured JSON evidence file
+- Timestamped run log
+- Optional dependency plan when future integrations are missing
 
 ## Why this matters
 
@@ -60,33 +59,39 @@ The real operational questions are:
 - Did SCCM report success, failure, or unknown state?
 - Is a reboot still pending?
 - Is the system business-critical?
-- Is there an active exploited vulnerability?
-- Is there a SolarWinds ticket/change record linked?
+- Is there active known-exploited vulnerability exposure?
+- Is there a SolarWinds ticket or change record linked?
 - Was an exception approved?
+- What action should happen next?
 
 This concept focuses on those answers.
 
-## Safety
+## Safety posture
 
-The prototype is intentionally read-only.
+The prototype is intentionally conservative.
 
+- Mock data only
+- Read-only by design
 - No remediation
 - No privileged writes
 - No stored credentials
+- No live authentication
 - No system changes
-- Mock data supported
+- No dependency downloads or installs
 
 ## Best production path
 
-Start small.
+Start small and export-first.
 
-Phase 1: SCCM + SolarWinds patch/reboot/vulnerability dashboard  
-Phase 2: Hybrid identity drift reporting  
-Phase 3: Backup / restore evidence tracking  
-Phase 4: Change evidence and audit packet generation
+1. Export approved SCCM/MECM inventory, compliance, deployment, and pending reboot data.
+2. Export approved SolarWinds ticket, incident, change, exception, and validation evidence.
+3. Normalize server names, owner fields, criticality tiers, and maintenance windows.
+4. Generate read-only assurance reports.
+5. Review output with Infrastructure, Security, Change Management, and leadership.
+6. Only then consider direct read-only API/module integrations.
 
 ## Positioning
 
 This is an operational assurance layer, not a monitoring replacement.
 
-Its value is making existing SCCM, SolarWinds, security, and backup data more actionable, reviewable, and defensible.
+Its value is making existing SCCM, SolarWinds, security, and operational data more actionable, reviewable, and defensible.
