@@ -31,6 +31,8 @@ The [`sample-output/`](sample-output/) folder includes static examples of the ar
 
 ![Infrastructure Assurance Snapshot Dashboard](https://i.postimg.cc/NjWgdpzd/Infrastructure-Assurance-Snapshot.jpg)
 
+![Infrastructure Assurance Servers](https://i.postimg.cc/q7bWmRR1/ss.png)
+
 ```text
 Dependency install/import plan
 Policy: Auto-install is denied by default. These are mock plans only.
