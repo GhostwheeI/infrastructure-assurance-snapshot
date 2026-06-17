@@ -1,6 +1,6 @@
 # Production Notes
 
-This repository is a mock-data prototype. A production version should start conservatively and prove value before adding direct integrations.
+This repository is a sanitized mock-data prototype. A production version should start conservatively and prove value before adding direct integrations.
 
 ## Recommended production path
 
@@ -10,7 +10,7 @@ Start with export-based correlation, not live API automation.
 2. Export approved SolarWinds ticket, incident, change, exception, and validation evidence.
 3. Normalize server names, owner fields, criticality tiers, and maintenance windows.
 4. Generate read-only assurance reports.
-5. Review output with Infrastructure, Security, and leadership.
+5. Review output with Infrastructure, Security, Change Management, and leadership.
 6. Only then consider direct read-only API/module integrations.
 
 ## Integration boundaries
@@ -26,6 +26,18 @@ It should not replace:
 - backup platforms
 - SIEM tooling
 - ITSM/change systems
+
+## Current prototype guarantees
+
+The included PowerShell prototype is designed to:
+
+- generate reports locally
+- run with mock data
+- avoid credential storage
+- avoid production write operations
+- avoid AD, Entra ID, registry, service, firewall, ticket, or patch-state changes
+- avoid automatic remediation
+- avoid real dependency downloads or installs
 
 ## Credential handling
 
@@ -56,10 +68,28 @@ The script should not:
 - deploy patches
 - restart servers
 - modify AD or Entra ID
+- modify registry or GPO state
 - modify firewall rules
 - close tickets
 - approve changes
 - write back to SCCM or SolarWinds
+
+## Data handling
+
+Treat server names, vulnerability findings, identity findings, exception records, and ticket details as sensitive.
+
+Before production use, an organization should define:
+
+- approved data sources
+- required access level
+- data retention expectations
+- report distribution rules
+- sensitive asset naming rules
+- change-management requirements
+- security review requirements
+- logging and evidence-handling requirements
+
+The sample output in this repository uses neutral hostnames and sanitized paths for public review.
 
 ## Code quality checks
 
@@ -79,6 +109,7 @@ Expected review focus:
 - clear output path handling
 - HTML encoding for report output
 - explicit handling of missing optional dependencies
+- repeatable generated artifacts
 
 ## Operational posture
 
@@ -92,3 +123,9 @@ The intended value is not clever automation. The value is operational clarity:
 - what needs a decision
 
 That keeps the project aligned with Systems Administration work instead of turning it into a software platform.
+
+## Production principle
+
+Visibility first. Evidence second. Automation later.
+
+A reporting layer should become trusted before it is used to drive automated action.
